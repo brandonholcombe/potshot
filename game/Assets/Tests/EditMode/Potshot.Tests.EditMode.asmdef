@@ -5,7 +5,9 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Potshot.Core",
-        "Potshot.EditorTools"
+        "Potshot.EditorTools",
+        "Potshot.Net",
+        "FishNet.Runtime"
     ],
     "includePlatforms": [
         "Editor"

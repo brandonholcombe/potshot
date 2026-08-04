@@ -1,14 +1,14 @@
 {
-  "root": "af45f236d61f0266",
-  "generated": "2026-08-04T22:53:43Z",
+  "root": "b10d07a8c6ea8bb6",
+  "generated": "2026-08-04T23:33:49Z",
   "status": "aligned",
   "symbols": {
     "architecture": {
-      "hash": "f5fcc09aae75ee20",
+      "hash": "fe866e7cdcbb18f1",
       "means": "architecture: authority=server, engine=unity-6000.1.14f1, expects_max_players=10, netcode=fishnet, tick_hz=30, transport=tugboat-udp",
       "docs": {
         "docs/netcode.md": {
-          "hash": "934df26f8f30d957",
+          "hash": "8644546af950a724",
           "status": "current"
         }
       },
@@ -17,11 +17,11 @@
       }
     },
     "assets": {
-      "hash": "f597b86d49c38f1a",
+      "hash": "26e0c585b0bd9ee9",
       "means": "assets: budget_usd_max=100, license_preference=cc0-kenney-first, spent_usd=0",
       "docs": {
         "docs/assets.md": {
-          "hash": "38bf322e1937bffe",
+          "hash": "91fa7850854502ab",
           "status": "current"
         }
       },

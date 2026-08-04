@@ -1,14 +1,11 @@
 {
-    "name": "Potshot.EditorTools",
-    "rootNamespace": "Potshot.EditorTools",
+    "name": "Potshot.Net",
+    "rootNamespace": "Potshot.Net",
     "references": [
         "Potshot.Core",
-        "Potshot.Net",
         "FishNet.Runtime"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

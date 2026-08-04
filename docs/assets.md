@@ -31,6 +31,7 @@ submission — keep it accurate.
 | Asset | Source (URL) | License | In repo? | Steam-safe? | Credits needed |
 |-------|--------------|---------|----------|-------------|----------------|
 | 3 map sketches (`Human-Input-Maps/*.png`) | Brandon (original drawings) | Owner | Yes | Yes | No |
+| FishNet 4.7.2 (netcode) | github.com/FirstGearGames/FishNet | FirstGearGames free tier (custom) | No — UPM ref only (license unclear on public redistribution) | Yes (shipped builds permitted) | Credits courteous |
 
 ## Spend tracker
 

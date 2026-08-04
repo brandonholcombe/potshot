@@ -1,7 +1,7 @@
 # M2a — FishNet install, connection scaffolding, version handshake
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — FishNet 4.7.2 via UPM; handshake verified live in-process (match authenticates, mismatch rejected); gate 47/47
 
 First netcode slice: FishNet in the project, a server/client connection
 path, and the build-version handshake. Gameplay stays untouched (tanks

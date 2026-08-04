@@ -6,11 +6,15 @@
   **FishySteamworks** (Steam Datagram Relay) added at M6. Game code must stay
   transport-agnostic — no raw IP/connection logic outside a single
   `ConnectionManager`.
-- Install method: FishNet ships as a `.unitypackage` on GitHub releases.
-  A `.unitypackage` is a gzipped tar — agents can extract it into
-  `game/Assets/` without the editor GUI, or run
-  `unity.sh -importPackage <file>` in batchmode. Prefer the batchmode import
-  so `.meta` files come from Unity itself.
+- **Installed (M2a): FishNet 4.7.2 via UPM git reference** —
+  `"com.firstgeargames.fishnet": "https://github.com/FirstGearGames/FishNet.git?path=Assets/FishNet#4.7.2"`.
+  No vendored source in the repo (FishNet's custom license does not
+  clearly permit public redistribution — M2a review); only manifest +
+  packages-lock (exact commit) are committed. `Potshot.Net` asmdef
+  references `FishNet.Runtime`. NetworkHub prefab (NetworkManager +
+  Tugboat:7777 + VersionAuthenticator + DefaultPrefabObjects) generated
+  by NetworkFactory. Connect via NetBootstrap: `-potshotServer` /
+  `-potshotClient <host>` CLI, or H (host) / J (join localhost) dev keys.
 
 ## Model
 

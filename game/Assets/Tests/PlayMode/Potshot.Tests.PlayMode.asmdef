@@ -3,7 +3,9 @@
     "rootNamespace": "Potshot.Tests",
     "references": [
         "UnityEngine.TestRunner",
-        "Potshot.Core"
+        "Potshot.Core",
+        "Potshot.Net",
+        "FishNet.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
