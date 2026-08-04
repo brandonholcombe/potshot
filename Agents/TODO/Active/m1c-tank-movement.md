@@ -1,7 +1,7 @@
 # M1c — Tank controller + dev arena (M1 slice a)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — gate green (EditMode 5, PlayMode 6), Visual 2/2, driving screenshot agent-verified. Friction fix recorded in PrefabFactory
 
 First gameplay slice: a driveable tank with the docs/gameplay.md feel
 targets, in a generated dev arena, verified by physics asserts + screenshots.

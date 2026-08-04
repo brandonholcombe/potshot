@@ -1,4 +1,5 @@
 using System.IO;
+using Potshot;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -54,21 +55,65 @@ namespace Potshot.EditorTools
             go.GetComponent<Renderer>().sharedMaterial = Mat(name, color);
         }
 
-        /// <summary>Get-or-create a saved material asset (scenes must not
-        /// reference in-memory materials).</summary>
-        static Material Mat(string name, Color color)
+        static Material Mat(string name, Color color) =>
+            MaterialFactory.GetOrCreate(QaMaterialsDir, name, color);
+
+        /// <summary>Dev arena: 40x40 ground, perimeter walls, tank from the
+        /// generated prefab, follow camera, sun. Overwrites DevArena.unity.</summary>
+        public static void BuildDevArena()
         {
-            Directory.CreateDirectory(QaMaterialsDir);
-            string path = $"{QaMaterialsDir}/{name}.mat";
-            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (mat == null)
+            var scene = EditorSceneManager.NewScene(
+                NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            ground.name = "Ground";
+            ground.transform.localScale = new Vector3(4f, 1f, 4f);
+            ground.GetComponent<Renderer>().sharedMaterial =
+                Mat("ArenaGround", new Color(0.42f, 0.38f, 0.3f));
+
+            var wallMat = Mat("ArenaWall", new Color(0.3f, 0.3f, 0.32f));
+            Wall("WallN", new Vector3(0f, 1f, 20f), new Vector3(41f, 2f, 1f), wallMat);
+            Wall("WallS", new Vector3(0f, 1f, -20f), new Vector3(41f, 2f, 1f), wallMat);
+            Wall("WallE", new Vector3(20f, 1f, 0f), new Vector3(1f, 2f, 41f), wallMat);
+            Wall("WallW", new Vector3(-20f, 1f, 0f), new Vector3(1f, 2f, 41f), wallMat);
+
+            var sun = new GameObject("Sun").AddComponent<Light>();
+            sun.type = LightType.Directional;
+            sun.transform.rotation = Quaternion.Euler(55f, 40f, 0f);
+
+            var tankPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Resources/Prefabs/Tank.prefab");
+            if (tankPrefab == null)
             {
-                mat = new Material(Shader.Find("Standard"));
-                AssetDatabase.CreateAsset(mat, path);
+                Debug.LogError("[SceneBuilder] Tank.prefab missing — run PrefabFactory.CreateAll first");
+                return;
             }
-            mat.color = color;
-            EditorUtility.SetDirty(mat);
-            return mat;
+            var tank = (GameObject)PrefabUtility.InstantiatePrefab(tankPrefab);
+            tank.transform.position = new Vector3(0f, 0.1f, 0f);
+
+            var cam = new GameObject("FollowCamera").AddComponent<Camera>();
+            cam.gameObject.tag = "MainCamera";
+            cam.transform.position = new Vector3(0f, 22f, -8f);
+            cam.transform.rotation = Quaternion.Euler(70f, 0f, 0f);
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.1f, 0.1f, 0.12f);
+            var follow = cam.gameObject.AddComponent<CameraFollow>();
+            follow.target = tank.transform;
+            follow.offset = new Vector3(0f, 22f, -8f);
+
+            Directory.CreateDirectory(ScenesDir);
+            EditorSceneManager.SaveScene(scene, $"{ScenesDir}/DevArena.unity");
+            AssetDatabase.SaveAssets();
+            Debug.Log("[SceneBuilder] DevArena.unity saved");
+        }
+
+        static void Wall(string name, Vector3 pos, Vector3 scale, Material mat)
+        {
+            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wall.name = name;
+            wall.transform.position = pos;
+            wall.transform.localScale = scale;
+            wall.GetComponent<Renderer>().sharedMaterial = mat;
         }
     }
 }
