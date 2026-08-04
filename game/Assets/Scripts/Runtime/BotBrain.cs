@@ -93,6 +93,8 @@ namespace Potshot
                 Move = new Vector2(moveDir.x, moveDir.z),
                 AimWorldPos = aim,
                 Fire = fire,
+                // Burn boost to close distance when the fight is far away.
+                Boost = dist > s.preferredRangeMax + 6f && _me.Boost.Ready,
             };
         }
 

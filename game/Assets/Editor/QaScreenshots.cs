@@ -31,6 +31,29 @@ namespace Potshot.EditorTools
             string scenePath = Arg("-potshotScene") ?? "Assets/Scenes/QaProbe.unity";
             EditorSceneManager.OpenScene(scenePath);
 
+            // -potshotOverview: add a temp orthographic top camera framing
+            // all renderers — full-map shots for drawing comparison.
+            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-potshotOverview") >= 0)
+            {
+                var bounds = new Bounds();
+                bool first = true;
+                foreach (var r in UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+                {
+                    if (first) { bounds = r.bounds; first = false; }
+                    else bounds.Encapsulate(r.bounds);
+                }
+                var top = new GameObject("Overview").AddComponent<Camera>();
+                top.orthographic = true;
+                top.orthographicSize = Mathf.Max(bounds.extents.z,
+                    bounds.extents.x / ((float)Width / Height)) * 1.05f;
+                top.transform.position = bounds.center + Vector3.up * 60f;
+                top.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                top.clearFlags = CameraClearFlags.SolidColor;
+                top.backgroundColor = new Color(0.08f, 0.08f, 0.1f);
+                foreach (var cam in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+                    if (cam != top) cam.enabled = false;
+            }
+
             string outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs/qa"));
             Directory.CreateDirectory(outDir);
             string sceneName = Path.GetFileNameWithoutExtension(scenePath);

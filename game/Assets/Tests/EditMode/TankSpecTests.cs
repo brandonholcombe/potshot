@@ -18,7 +18,7 @@ namespace Potshot.Tests
 
         [Test]
         public void TopSpeed_MatchesFeelTarget() =>
-            Assert.That(Load().topSpeed, Is.EqualTo(6f).Within(0.001f));
+            Assert.That(Load().topSpeed, Is.EqualTo(7f).Within(0.001f));
 
         [Test]
         public void Accel_ReachesTopSpeedInPoint4Seconds()

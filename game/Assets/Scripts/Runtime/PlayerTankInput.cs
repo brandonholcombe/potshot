@@ -38,6 +38,7 @@ namespace Potshot
                 Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),
                 AimWorldPos = aim,
                 Fire = Input.GetButton("Fire1"),
+                Boost = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.Space),
             };
         }
     }

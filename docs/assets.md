@@ -30,7 +30,7 @@ submission — keep it accurate.
 
 | Asset | Source (URL) | License | In repo? | Steam-safe? | Credits needed |
 |-------|--------------|---------|----------|-------------|----------------|
-| _(empty — first rows land with M1 art import)_ | | | | | |
+| 3 map sketches (`Human-Input-Maps/*.png`) | Brandon (original drawings) | Owner | Yes | Yes | No |
 
 ## Spend tracker
 

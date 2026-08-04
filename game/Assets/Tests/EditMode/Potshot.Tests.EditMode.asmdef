@@ -4,7 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Potshot.Core"
+        "Potshot.Core",
+        "Potshot.EditorTools"
     ],
     "includePlatforms": [
         "Editor"

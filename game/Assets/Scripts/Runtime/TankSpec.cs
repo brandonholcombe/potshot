@@ -10,9 +10,12 @@ namespace Potshot
     /// </summary>
     public class TankSpec : ScriptableObject
     {
-        public float topSpeed = 6f;          // u/s
-        public float accel = 15f;            // u/s² (also used for decel)
+        public float topSpeed = 7f;          // u/s (bumped from 6, playtest 2026-08-04)
+        public float accel = 17.5f;          // u/s² — keeps the 0.4 s reach
         public float hullTurnDegPerSec = 540f;
         public float turretDegPerSec = 360f;
+        public float boostMultiplier = 1.8f; // speed AND accel while boosting
+        public float boostDuration = 1f;     // s
+        public float boostCooldown = 4f;     // s, starts when boost fires
     }
 }

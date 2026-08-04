@@ -115,10 +115,13 @@ namespace Potshot.EditorTools
                 AssetDatabase.CreateAsset(spec, path);
             }
             // docs/gameplay.md feel targets — single source of tuning truth.
-            spec.topSpeed = 6f;
-            spec.accel = 15f;
+            spec.topSpeed = 7f;
+            spec.accel = 17.5f;
             spec.hullTurnDegPerSec = 540f;
             spec.turretDegPerSec = 360f;
+            spec.boostMultiplier = 1.8f;
+            spec.boostDuration = 1f;
+            spec.boostCooldown = 4f;
             EditorUtility.SetDirty(spec);
             return spec;
         }

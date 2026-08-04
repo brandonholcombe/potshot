@@ -12,6 +12,7 @@ namespace Potshot
         public Vector2 Move;        // normalized intent, clamped in TankMotor
         public Vector3 AimWorldPos; // world point the turret wants to face
         public bool Fire;
+        public bool Boost;          // held-trigger: re-fires on cooldown expiry while held
     }
 
     public interface ITankInput

@@ -20,6 +20,10 @@ namespace Potshot
         /// sliding (M1f review).</summary>
         public bool InputFrozen;
 
+        /// <summary>Writable predicted state — the M2 reconcile path
+        /// restores it directly (M1g review).</summary>
+        public TankMotor.BoostState Boost;
+
         public ITankInput InputSource { get; set; }
 
         Rigidbody _body;
@@ -38,9 +42,10 @@ namespace Potshot
             {
                 sample.Move = Vector2.zero;
                 sample.Fire = false;
+                sample.Boost = false; // held Shift must not burn the cooldown
             }
             _lastSample = sample;
-            TankMotor.Step(_body, in _lastSample, spec, Time.fixedDeltaTime);
+            TankMotor.Step(_body, in _lastSample, spec, ref Boost, Time.fixedDeltaTime);
             if (weapon != null) weapon.Tick(in _lastSample, Time.fixedDeltaTime);
         }
 

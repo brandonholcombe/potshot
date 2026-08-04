@@ -28,7 +28,10 @@ opportunistic shot — the game should reward cheek, not grinding.
 
 ## Feel targets (tune blind, verify by playtest)
 
-- Tank top speed ~6 u/s, reach in ~0.4 s; turret turn ~360°/s.
+- Tank top speed ~7 u/s, reach in ~0.4 s; turret turn ~360°/s.
+  (Bumped from 6 after the 2026-08-04 playtest.)
+- **Boost** (Shift/Space, held-trigger): 1.8× speed and accel for 1 s,
+  4 s cooldown from activation. Bots boost to close distance.
 - Cannon shell ~14 u/s, 1 ricochet, 2-hit kill; respawn in 2 s.
 - **Self-damage is on**: your own shells hurt you after they ricochet, and
   your own mortar AoE always hurts you. Bank shots carry risk by design

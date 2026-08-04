@@ -19,6 +19,12 @@ namespace Potshot
                 if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                     _weapon.Equip(Resources.Load<WeaponSpec>($"Specs/Weapons/{Ids[i]}"));
 
+            // F1..F8: jump between build scenes (DevArena + imported maps).
+            int sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings;
+            for (int i = 0; i < 8 && i < sceneCount; i++)
+                if (Input.GetKeyDown(KeyCode.F1 + i))
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(i);
+
             if (Input.GetKeyDown(KeyCode.Escape))
                 Application.Quit();
         }

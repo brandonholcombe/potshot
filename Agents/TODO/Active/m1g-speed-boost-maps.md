@@ -1,7 +1,7 @@
 # M1g — Speed bump, boost mechanic, PNG-drawn maps
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — gate 40/40; 3 maps imported (connectivity 100%/98%/92%), overheads agent-verified vs drawings; boost + 7 u/s live
 
 Three playtest-driven requests (Brandon, 2026-08-04): faster tanks, a
 boost key with cooldown, and real maps generated from the hand-drawn PNGs

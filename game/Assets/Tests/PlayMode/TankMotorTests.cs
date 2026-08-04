@@ -52,7 +52,7 @@ namespace Potshot.Tests
         {
             _input.Next = new TankInputSample { Move = Vector2.up };
             for (int i = 0; i < 72; i++) yield return new WaitForFixedUpdate(); // 1.2 s
-            Assert.That(PlanarSpeed(), Is.EqualTo(6f).Within(6f * 0.05f));
+            Assert.That(PlanarSpeed(), Is.EqualTo(7f).Within(7f * 0.05f));
         }
 
         [UnityTest]
@@ -60,12 +60,12 @@ namespace Potshot.Tests
         {
             _input.Next = new TankInputSample { Move = Vector2.up };
             int steps = 0;
-            while (PlanarSpeed() < 6f * 0.95f && steps < 60)
+            while (PlanarSpeed() < 7f * 0.95f && steps < 60)
             {
                 yield return new WaitForFixedUpdate();
                 steps++;
             }
-            float t = steps * Dt; // linear model predicts 5.7/15 = 0.38 s
+            float t = steps * Dt; // linear model predicts 6.65/17.5 = 0.38 s
             Assert.That(t, Is.InRange(0.3f, 0.5f), $"reached 95% in {t:F3}s");
         }
 
@@ -81,7 +81,7 @@ namespace Potshot.Tests
                 yield return new WaitForFixedUpdate();
                 steps++;
             }
-            float t = steps * Dt; // linear: (6-0.2)/15 ≈ 0.39 s
+            float t = steps * Dt; // linear: (7-0.2)/17.5 ≈ 0.39 s
             Assert.That(t, Is.LessThanOrEqualTo(0.6f), $"stopped in {t:F3}s");
         }
 

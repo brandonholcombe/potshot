@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38ddc10257f744b62b3fd5bb88329585, type: 3}
   m_Name: TankSpec
   m_EditorClassIdentifier: 
-  topSpeed: 6
-  accel: 15
+  topSpeed: 7
+  accel: 17.5
   hullTurnDegPerSec: 540
   turretDegPerSec: 360
+  boostMultiplier: 1.8
+  boostDuration: 1
+  boostCooldown: 4

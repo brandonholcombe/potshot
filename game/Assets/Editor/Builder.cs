@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -10,9 +11,14 @@ namespace Potshot.EditorTools
     {
         public static void BuildMacDev()
         {
+            var scenes = new System.Collections.Generic.List<string>
+                { "Assets/Scenes/DevArena.unity" };
+            scenes.AddRange(System.IO.Directory
+                .GetFiles("Assets/Scenes/Maps", "*.unity")
+                .OrderBy(p => p));
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { "Assets/Scenes/DevArena.unity" },
+                scenes = scenes.ToArray(),
                 locationPathName = "Builds/PotshotDev.app",
                 target = BuildTarget.StandaloneOSX,
                 options = BuildOptions.Development,
