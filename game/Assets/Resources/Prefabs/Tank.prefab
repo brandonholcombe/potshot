@@ -370,6 +370,7 @@ MonoBehaviour:
   spec: {fileID: 11400000, guid: aae5461e23415457498dd566f60cea92, type: 2}
   turret: {fileID: 1626034305974438602}
   weapon: {fileID: 4249520358039362253}
+  InputFrozen: 0
 --- !u!114 &8067518561484275712
 MonoBehaviour:
   m_ObjectHideFlags: 0

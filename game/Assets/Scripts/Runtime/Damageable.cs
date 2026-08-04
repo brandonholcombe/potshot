@@ -16,6 +16,10 @@ namespace Potshot
 
         void Awake() => Health = maxHealth;
 
+        /// <summary>Respawn support: call BEFORE reactivating, or the tank
+        /// is briefly an invulnerable ghost (M1f review).</summary>
+        public void ResetHealth() => Health = maxHealth;
+
         public void TakeDamage(float amount, GameObject source)
         {
             if (IsDead) return;

@@ -15,6 +15,11 @@ namespace Potshot
         public Transform turret;
         public WeaponController weapon;
 
+        /// <summary>Intermission freeze: zeroes Move/Fire but keeps aim and
+        /// still runs the motor step so tanks decelerate instead of
+        /// sliding (M1f review).</summary>
+        public bool InputFrozen;
+
         public ITankInput InputSource { get; set; }
 
         Rigidbody _body;
@@ -28,7 +33,13 @@ namespace Potshot
         void FixedUpdate()
         {
             if (InputSource == null || spec == null) return;
-            _lastSample = InputSource.Sample();
+            var sample = InputSource.Sample();
+            if (InputFrozen)
+            {
+                sample.Move = Vector2.zero;
+                sample.Fire = false;
+            }
+            _lastSample = sample;
             TankMotor.Step(_body, in _lastSample, spec, Time.fixedDeltaTime);
             if (weapon != null) weapon.Tick(in _lastSample, Time.fixedDeltaTime);
         }

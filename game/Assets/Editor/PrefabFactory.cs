@@ -18,6 +18,7 @@ namespace Potshot.EditorTools
         public static void CreateAll()
         {
             WeaponFactory.CreateSpecs();
+            CreateBotSpec();
             var spec = CreateTankSpec();
             CreateProjectilePrefab();
             CreateWeaponPickupPrefab();
@@ -80,6 +81,27 @@ namespace Potshot.EditorTools
             {
                 Object.DestroyImmediate(go);
             }
+        }
+
+        public static BotSpec CreateBotSpec()
+        {
+            Directory.CreateDirectory(SpecDir);
+            string path = $"{SpecDir}/BotSpec.asset";
+            var spec = AssetDatabase.LoadAssetAtPath<BotSpec>(path);
+            if (spec == null)
+            {
+                spec = ScriptableObject.CreateInstance<BotSpec>();
+                AssetDatabase.CreateAsset(spec, path);
+            }
+            spec.reactionInterval = 0.2f;
+            spec.aimJitterDeg = 4f;
+            spec.preferredRangeMin = 8f;
+            spec.preferredRangeMax = 12f;
+            spec.fireRange = 16f;
+            spec.pickupDetourRange = 12f;
+            spec.wallProbeDistance = 3f;
+            EditorUtility.SetDirty(spec);
+            return spec;
         }
 
         public static TankSpec CreateTankSpec()

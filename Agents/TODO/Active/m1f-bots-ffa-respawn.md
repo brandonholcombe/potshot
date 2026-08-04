@@ -1,7 +1,7 @@
 # M1f — Bots, FFA scoring, respawns (M1 slice d — closes M1)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — gate 34/34, Visual 4/4, bot-combat capture verified; M1 closes
 
 The game loop: everything dies, respawns, and counts. Replaces DevArena's
 inert dummies with bots that fight back.

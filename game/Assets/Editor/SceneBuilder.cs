@@ -90,9 +90,12 @@ namespace Potshot.EditorTools
             }
             var tank = (GameObject)PrefabUtility.InstantiatePrefab(tankPrefab);
             tank.transform.position = new Vector3(0f, 0.1f, 0f);
+            tank.name = "Player";
 
-            // Stationary target dummies for playtests: input stripped so
-            // they ignore the keyboard, Damageable stays (they die).
+            // Bots: player prefab minus human-input components, plus a brain.
+            var botSpec = AssetDatabase.LoadAssetAtPath<BotSpec>(
+                "Assets/Resources/Specs/BotSpec.asset");
+            int botIndex = 0;
             foreach (var pos in new[]
             {
                 new Vector3(-10f, 0.1f, 10f),
@@ -100,13 +103,40 @@ namespace Potshot.EditorTools
                 new Vector3(4f, 0.1f, -12f),
             })
             {
-                var dummy = (GameObject)PrefabUtility.InstantiatePrefab(tankPrefab);
-                dummy.transform.position = pos;
-                dummy.name = "TargetDummy";
-                Object.DestroyImmediate(dummy.GetComponent<PlayerTankInput>());
-                Object.DestroyImmediate(dummy.GetComponent<PlaytestHotkeys>());
-                Object.DestroyImmediate(dummy.GetComponent<DevHud>()); // one HUD only
+                var bot = (GameObject)PrefabUtility.InstantiatePrefab(tankPrefab);
+                bot.transform.position = pos;
+                bot.name = $"Bot{++botIndex}";
+                Object.DestroyImmediate(bot.GetComponent<PlayerTankInput>());
+                Object.DestroyImmediate(bot.GetComponent<PlaytestHotkeys>());
+                Object.DestroyImmediate(bot.GetComponent<DevHud>()); // one HUD only
+                bot.AddComponent<BotBrain>().spec = botSpec;
             }
+
+            // Center cover: breaks lines of sight, invites bank shots.
+            var coverMat = Mat("Cover", new Color(0.36f, 0.33f, 0.38f));
+            foreach (var (pos, scale) in new[]
+            {
+                (new Vector3(-4f, 0.75f, 3f), new Vector3(2f, 1.5f, 2f)),
+                (new Vector3(5f, 0.75f, -2f), new Vector3(2f, 1.5f, 3f)),
+                (new Vector3(0f, 0.75f, -6f), new Vector3(3f, 1.5f, 2f)),
+            })
+            {
+                var cover = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cover.name = "Cover";
+                cover.transform.position = pos;
+                cover.transform.localScale = scale;
+                cover.GetComponent<Renderer>().sharedMaterial = coverMat;
+            }
+
+            // FFA game mode with an 8-point spawn ring.
+            var mode = new GameObject("FfaGameMode").AddComponent<FfaGameMode>();
+            var ring = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float a = i * Mathf.PI * 2f / 8f;
+                ring[i] = new Vector3(Mathf.Cos(a) * 15f, 0.1f, Mathf.Sin(a) * 15f);
+            }
+            mode.spawnPoints = ring;
 
             // Weapon pickup pads
             var pickupPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
