@@ -1,7 +1,7 @@
 # M1a — Unity MCP bridge install (time-boxed trial)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — bridge verified: 8090 up in ~10s, MCP handshake OK, guardrail blocks, tests green after teardown
 
 Install CoderGamester/mcp-unity so agents can drive a persistent editor
 process (live console, no batchmode cold starts). Guardrails from the M0b

@@ -23,6 +23,9 @@ server/build/
 # macOS
 .DS_Store
 
+# Agent editor daemon
+.editor-daemon.pid
+
 # Secrets — never commit
 *.env
 secrets*.json

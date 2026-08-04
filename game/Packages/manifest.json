@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.gamelovers.mcp-unity": "https://github.com/CoderGamester/mcp-unity.git#1.4.0",
     "com.unity.test-framework": "1.4.5",
     "com.unity.multiplayer.center": "1.0.0",
     "com.unity.modules.accessibility": "1.0.0",

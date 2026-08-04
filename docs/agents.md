@@ -55,6 +55,27 @@ settings). Re-running a builder must be idempotent.
 3. **Feel numbers**: `docs/gameplay.md` feel targets are asserted in tests
    (top speed, time-to-kill) so blind tuning stays inside sane bounds.
 
+## Unity MCP bridge (iteration mode)
+
+`com.gamelovers.mcp-unity` (pinned `#v1.4.0`) gives agents a persistent
+editor: live console, compile status, scene queries — no batchmode cold
+start per iteration. Registered project-scope in `.mcp.json` (new Claude
+Code sessions see it after the user approves the project MCP config; the
+session that installed it must restart to see the tools).
+
+- `scripts/editor-daemon.sh start|stop|status` — the agent launches/owns the
+  editor process. Windowed editor requires the logged-in macOS GUI session;
+  over SSH, stay batchmode-only.
+- The package auto-starts its WebSocket bridge on **localhost:8090** when a
+  non-batchmode editor loads (`ProjectSettings/McpUnitySettings.json`,
+  `AutoStartServer`; keep `AllowRemoteConnections: false` — the socket is
+  unauthenticated). It correctly does nothing in batchmode runs.
+- **Lock rule**: stop the daemon before `run-tests.sh` / `build-server.sh`
+  (enforced — run-tests fails fast if the daemon pidfile is alive).
+  Batchmode tests remain the merge gate; MCP is iteration speed only.
+- `Library/PackageCache` is disposable: `scripts/mcp-unity-server.sh`
+  re-resolves and rebuilds the Node server automatically if Unity wiped it.
+
 ## Human interface
 
 - Blockers only → task file in `Agents/TODO/Human/` with: exact steps, why

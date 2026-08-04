@@ -1,0 +1,5 @@
+{
+  "Port": 8090,
+  "AutoStartServer": true,
+  "AllowRemoteConnections": false
+}
