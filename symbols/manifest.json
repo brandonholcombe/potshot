@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "potshot",
+    "intent": "Top-down online multiplayer tank arena for ~10 friends; agent-built with minimal human input; Steam release at M6"
+  },
+  "symbols": {
+    "gameplay": {
+      "description": "Game design pillars and MVP scope — the 'is it fun' contract",
+      "docs": ["docs/gameplay.md"],
+      "properties": {
+        "genre": "top-down-tank-arena",
+        "max_players": 10,
+        "mvp_mode": "ffa-deathmatch"
+      },
+      "interlocks": {}
+    },
+    "architecture": {
+      "description": "Engine, netcode stack, and simulation authority model",
+      "docs": ["docs/netcode.md"],
+      "properties": {
+        "engine": "unity-6000.1.14f1",
+        "netcode": "fishnet",
+        "transport": "tugboat-udp",
+        "authority": "server",
+        "tick_hz": 30,
+        "expects_max_players": 10
+      },
+      "interlocks": {
+        "gameplay.max_players": "expects_max_players"
+      }
+    },
+    "deployment": {
+      "description": "Dedicated server hosting on the kodloki LKE cluster",
+      "docs": ["docs/deployment.md"],
+      "properties": {
+        "cluster": "tow-c1",
+        "namespace": "potshot",
+        "host": "potshot.kodloki.io",
+        "udp_exposure": "hostPort-7777",
+        "image": "bholcombe/potshot-server",
+        "expects_transport": "tugboat-udp"
+      },
+      "interlocks": {
+        "architecture.transport": "expects_transport"
+      }
+    },
+    "steam": {
+      "description": "Steam release track — M6; branding and transport plans that earlier milestones must not violate",
+      "docs": ["docs/steam.md"],
+      "properties": {
+        "status": "backlog-m6",
+        "branding": "Potshot",
+        "forbidden_marks": "any Shell* name (kChamp Games)",
+        "planned_transport": "fishy-steamworks"
+      },
+      "interlocks": {}
+    },
+    "assets": {
+      "description": "Asset sourcing budget and licensing policy",
+      "docs": ["docs/assets.md"],
+      "properties": {
+        "budget_usd_max": 100,
+        "spent_usd": 0,
+        "license_preference": "cc0-kenney-first"
+      },
+      "interlocks": {}
+    }
+  }
+}

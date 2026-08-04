@@ -33,8 +33,34 @@ filing a Human task.
 - **Human (Brandon)**: account logins (Unity, Steam), payments, and playing
   the game. Nothing else without a documented reason.
 
+## Symbolic Alignment
+
+This project uses the kodloki **baseline template** (haxley:
+`brandonw.h2o/baseline`): project truth is encoded as typed symbols with
+property interlocks forming a hash tree. Agents traverse semantics; machines
+verify hashes.
+
+- `symbols/manifest.json` — symbol definitions. Read `description` and
+  `properties` to understand current state; follow each symbol's `docs`.
+- `symbols/manifest.lock` — generated hash tree; `means` is the summary,
+  `status` says whether alignment holds. Never reason about hex strings.
+
+```bash
+python3 scripts/align.py status   # human-readable report
+python3 scripts/align.py check    # exit 0=ok, 1=broken, 2=stale
+```
+
+If check fails: **stop**, fix the root cause (or flag it), then
+`python3 scripts/align.py lock` and commit manifest + lock together. A
+PreToolUse hook (`check-alignment.sh`) denies production-file edits while
+alignment is broken or stale, and CI (`alignment-check.yml`) enforces it on
+push. When a decision changes anything a symbol tracks (engine, transport,
+hosting, budget, branding), update the manifest properties + interlocked
+symbols, re-lock, and update the symbol's docs in the same change.
+
 ## Where Truth Lives
 
+- `symbols/manifest.json` + `manifest.lock` — machine-verified state (above).
 - `PROJECT_STATUS.md` — milestone tracker (M0–M6). Update when state changes.
 - `ARCHITECTURE.md` — system overview.
 - `docs/` — per-domain deep dives: `gameplay.md`, `netcode.md`,

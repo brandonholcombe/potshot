@@ -6,6 +6,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash .claude/hooks/check-alignment.sh"
+          },
+          {
+            "type": "command",
             "command": "bash .claude/hooks/require-review.sh"
           }
         ]

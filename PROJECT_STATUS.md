@@ -15,7 +15,8 @@
 ## M0 checklist
 
 - [x] Repo scaffold (baseline template: CLAUDE.md, docs/, Agents/, K8s/, scripts/)
-- [x] Review-gate hook ported from eloup (adapted paths, no symbols system)
+- [x] Review-gate hook ported from eloup (adapted paths)
+- [x] Symbolic alignment from the haxley baseline template (`symbols/` + align.py + hook + CI); 5 symbols, all aligned
 - [x] Unity 6000.1.14f1 present on build machine
 - [x] Unity Hub installed (by agent, headless)
 - [ ] Unity license activated — **Human task 001**

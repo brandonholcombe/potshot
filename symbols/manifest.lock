@@ -1,0 +1,66 @@
+{
+  "root": "3fc36a67c72490d8",
+  "generated": "2026-08-04T20:37:44Z",
+  "status": "aligned",
+  "symbols": {
+    "architecture": {
+      "hash": "f5fcc09aae75ee20",
+      "means": "architecture: authority=server, engine=unity-6000.1.14f1, expects_max_players=10, netcode=fishnet, tick_hz=30, transport=tugboat-udp",
+      "docs": {
+        "docs/netcode.md": {
+          "hash": "934df26f8f30d957",
+          "status": "current"
+        }
+      },
+      "interlocks": {
+        "gameplay.max_players == expects_max_players": "PASS"
+      }
+    },
+    "assets": {
+      "hash": "7d2081027fbadc4b",
+      "means": "assets: budget_usd_max=100, license_preference=cc0-kenney-first, spent_usd=0",
+      "docs": {
+        "docs/assets.md": {
+          "hash": "e6c2b185be038ba1",
+          "status": "current"
+        }
+      },
+      "interlocks": {}
+    },
+    "deployment": {
+      "hash": "613cf536594aae5e",
+      "means": "deployment: cluster=tow-c1, expects_transport=tugboat-udp, host=potshot.kodloki.io, image=bholcombe/potshot-server, namespace=potshot, udp_exposure=hostPort-7777",
+      "docs": {
+        "docs/deployment.md": {
+          "hash": "8be4fbfe02cb7ec6",
+          "status": "current"
+        }
+      },
+      "interlocks": {
+        "architecture.transport == expects_transport": "PASS"
+      }
+    },
+    "gameplay": {
+      "hash": "ea1c11283e520589",
+      "means": "gameplay: genre=top-down-tank-arena, max_players=10, mvp_mode=ffa-deathmatch",
+      "docs": {
+        "docs/gameplay.md": {
+          "hash": "af09e34bf3e7da9b",
+          "status": "current"
+        }
+      },
+      "interlocks": {}
+    },
+    "steam": {
+      "hash": "d029b85428bb073c",
+      "means": "steam: branding=Potshot, forbidden_marks=any Shell* name (kChamp Games), planned_transport=fishy-steamworks, status=backlog-m6",
+      "docs": {
+        "docs/steam.md": {
+          "hash": "7d03b16521fdd97e",
+          "status": "current"
+        }
+      },
+      "interlocks": {}
+    }
+  }
+}
