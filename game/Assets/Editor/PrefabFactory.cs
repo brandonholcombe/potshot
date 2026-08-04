@@ -134,6 +134,7 @@ namespace Potshot.EditorTools
                 controller.turret = turret;
                 controller.weapon = weapon;
                 root.AddComponent<PlayerTankInput>();
+                root.AddComponent<PlaytestHotkeys>();
 
                 Directory.CreateDirectory(PrefabDir);
                 PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/Tank.prefab");

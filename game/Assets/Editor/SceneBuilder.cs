@@ -91,6 +91,22 @@ namespace Potshot.EditorTools
             var tank = (GameObject)PrefabUtility.InstantiatePrefab(tankPrefab);
             tank.transform.position = new Vector3(0f, 0.1f, 0f);
 
+            // Stationary target dummies for playtests: input stripped so
+            // they ignore the keyboard, Damageable stays (they die).
+            foreach (var pos in new[]
+            {
+                new Vector3(-10f, 0.1f, 10f),
+                new Vector3(12f, 0.1f, 6f),
+                new Vector3(4f, 0.1f, -12f),
+            })
+            {
+                var dummy = (GameObject)PrefabUtility.InstantiatePrefab(tankPrefab);
+                dummy.transform.position = pos;
+                dummy.name = "TargetDummy";
+                Object.DestroyImmediate(dummy.GetComponent<PlayerTankInput>());
+                Object.DestroyImmediate(dummy.GetComponent<PlaytestHotkeys>());
+            }
+
             var cam = new GameObject("FollowCamera").AddComponent<Camera>();
             cam.gameObject.tag = "MainCamera";
             cam.transform.position = new Vector3(0f, 22f, -8f);
