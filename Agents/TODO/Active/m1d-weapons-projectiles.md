@@ -1,7 +1,7 @@
 # M1d — Weapons, projectiles, damage (M1 slice b)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — gate 21/21 green, Visual 3/3, firefight capture agent-verified
 
 The shooting half of the core loop: 4 weapons from docs/gameplay.md, physics
 projectiles, health/damage/death. Ammo + pickups are slice (c); respawn +

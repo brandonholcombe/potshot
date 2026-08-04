@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0061dcc9ce20d481fa397a4db63b2cbb, type: 3}
+  m_Name: spread
+  m_EditorClassIdentifier: 
+  id: spread
+  displayName: Spread Shot
+  fireCooldown: 1
+  projectileSpeed: 12
+  damage: 15
+  ricochets: 0
+  pelletCount: 5
+  spreadAngleDeg: 30
+  useGravity: 0
+  aoeRadius: 0
+  projectileScale: 0.2
+  projectileMaterial: {fileID: 2100000, guid: bd67b3236eb4245a3a7d39bf55e263a0, type: 2}

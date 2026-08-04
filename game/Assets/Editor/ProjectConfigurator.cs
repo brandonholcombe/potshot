@@ -1,3 +1,4 @@
+using Potshot;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
@@ -21,11 +22,26 @@ namespace Potshot.EditorTools
                 NamedBuildTarget.Standalone, "io.kodloki.potshot");
 
             SetFixedTimestep(1f / 60f);
+            SetLayerName(PotshotLayers.Projectile, "Projectile");
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[ProjectConfigurator] applied: company={PlayerSettings.companyName} " +
                       $"product={PlayerSettings.productName} version={PlayerSettings.bundleVersion} " +
                       $"fixedTimestep={Time.fixedDeltaTime}");
+        }
+
+        static void SetLayerName(int index, string name)
+        {
+            var tagManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
+            if (tagManager.Length == 0)
+            {
+                Debug.LogError("[ProjectConfigurator] TagManager.asset not found");
+                return;
+            }
+            var so = new SerializedObject(tagManager[0]);
+            var layers = so.FindProperty("layers");
+            layers.GetArrayElementAtIndex(index).stringValue = name;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void SetFixedTimestep(float seconds)

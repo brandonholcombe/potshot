@@ -13,6 +13,7 @@ namespace Potshot
     {
         public TankSpec spec;
         public Transform turret;
+        public WeaponController weapon;
 
         public ITankInput InputSource { get; set; }
 
@@ -29,6 +30,7 @@ namespace Potshot
             if (InputSource == null || spec == null) return;
             _lastSample = InputSource.Sample();
             TankMotor.Step(_body, in _lastSample, spec, Time.fixedDeltaTime);
+            if (weapon != null) weapon.Tick(in _lastSample, Time.fixedDeltaTime);
         }
 
         void Update()

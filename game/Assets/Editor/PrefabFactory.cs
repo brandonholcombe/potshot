@@ -17,10 +17,40 @@ namespace Potshot.EditorTools
 
         public static void CreateAll()
         {
+            WeaponFactory.CreateSpecs();
             var spec = CreateTankSpec();
+            CreateProjectilePrefab();
             CreateTankPrefab(spec);
             AssetDatabase.SaveAssets();
             Debug.Log("[PrefabFactory] CreateAll done");
+        }
+
+        public static void CreateProjectilePrefab()
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            try
+            {
+                go.name = "Projectile";
+                go.layer = PotshotLayers.Projectile;
+
+                var body = go.AddComponent<Rigidbody>();
+                body.mass = 1f;
+                body.useGravity = false; // per-shot via WeaponSpec
+                body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+                var col = go.GetComponent<SphereCollider>();
+                col.sharedMaterial = FrictionlessMat(); // exact reflections
+
+                go.AddComponent<Projectile>();
+
+                Directory.CreateDirectory(PrefabDir);
+                PrefabUtility.SaveAsPrefabAsset(go, $"{PrefabDir}/Projectile.prefab");
+                Debug.Log("[PrefabFactory] Projectile.prefab saved");
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
         }
 
         public static TankSpec CreateTankSpec()
@@ -70,14 +100,39 @@ namespace Potshot.EditorTools
                 Visual(root.transform, PrimitiveType.Cube, "HullVisual",
                     new Vector3(0f, 0.3f, 0f), new Vector3(1.6f, 0.6f, 2.2f), hullMat);
 
-                var turret = Visual(root.transform, PrimitiveType.Cylinder, "Turret",
-                    new Vector3(0f, 0.75f, 0f), new Vector3(1f, 0.15f, 1f), turretMat);
+                // Unscaled pivot: children keep true offsets — parenting
+                // them under the scaled cylinder crushed the muzzle height
+                // (y -0.3 became -0.045) and flattened the barrel (M1d).
+                var turret = new GameObject("Turret").transform;
+                turret.SetParent(root.transform, false);
+                turret.localPosition = new Vector3(0f, 0.75f, 0f);
+                Visual(turret, PrimitiveType.Cylinder, "TurretVisual",
+                    Vector3.zero, new Vector3(1f, 0.15f, 1f), turretMat);
                 Visual(turret, PrimitiveType.Cube, "Barrel",
                     new Vector3(0f, 0f, 1f), new Vector3(0.2f, 0.2f, 1.4f), turretMat);
+
+                // Muzzle: child of the turret (aim frame), 1.9 u out — clear
+                // of the 2.2 u-long hull collider so shots spawn outside it.
+                var muzzle = new GameObject("Muzzle").transform;
+                muzzle.SetParent(turret, false);
+                // y -0.3: shells fly at world y≈0.45, inside the 0.1–0.7
+                // band of tank colliders — at turret height they graze
+                // clean over enemy hulls (M1d test-caught).
+                muzzle.localPosition = new Vector3(0f, -0.3f, 1.9f);
+
+                root.AddComponent<Damageable>().maxHealth = 100f;
+
+                var weapon = root.AddComponent<WeaponController>();
+                weapon.muzzle = muzzle;
+                weapon.projectilePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    $"{PrefabDir}/Projectile.prefab");
+                weapon.current = AssetDatabase.LoadAssetAtPath<WeaponSpec>(
+                    "Assets/Resources/Specs/Weapons/cannon.asset");
 
                 var controller = root.AddComponent<TankController>();
                 controller.spec = spec;
                 controller.turret = turret;
+                controller.weapon = weapon;
                 root.AddComponent<PlayerTankInput>();
 
                 Directory.CreateDirectory(PrefabDir);
