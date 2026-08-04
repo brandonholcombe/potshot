@@ -10,8 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6097296001911400602}
   - component: {fileID: 6316367463994495516}
+  - component: {fileID: 608488808085530905}
   - component: {fileID: 652925743265006402}
   - component: {fileID: 454672465915218453}
+  - component: {fileID: 2092702837996941760}
   m_Layer: 0
   m_Name: NetworkHub
   m_TagString: Untagged
@@ -55,6 +57,25 @@ MonoBehaviour:
   _port: 7777
   _maximumClients: 4095
   _clientAddress: localhost
+--- !u!114 &608488808085530905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6716210822554313094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fdaae44044276a49a52229c1597e33b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _updateOrder: 0
+  _timingType: 0
+  _allowTickDropping: 1
+  _maximumFrameTicks: 3
+  _tickRate: 30
+  _pingInterval: 1
+  _physicsMode: 0
 --- !u!114 &652925743265006402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -86,3 +107,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1da56bd9a19b4a75b30ac9c6fa13987, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2092702837996941760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6716210822554313094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98e2b3cde95024b7ebff2e26759d5358, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tankNetPrefab: {fileID: 5204429601227339000, guid: ca5b9e7eff06e4f63b0707e43d32d404, type: 3}

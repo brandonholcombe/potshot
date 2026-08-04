@@ -20,8 +20,16 @@
 
 - **Server-authoritative**: server owns tank state, projectiles, damage,
   pickups. Clients send inputs only.
-- **Client-side prediction + reconciliation** (FishNet prediction v2) on the
-  local tank; misprediction snaps are smoothed over ~100 ms.
+- **Client-side prediction + reconciliation** (implemented M2b): NetworkTank
+  extends TickNetworkBehaviour; owner (or server, for ownerless bots) builds
+  TankMoveData from ITankInput each tick; `[Replicate]` runs TankMotor.Step
+  on everyone; `[Reconcile]` carries RigidbodyState + BoostState. TankNet is
+  a SEPARATE prefab (NetworkObject deactivates offline objects). Physics:
+  rigidbody prediction requires PhysicsMode.TimeManager — set at RUNTIME in
+  NetBootstrap.EnsureHub only; serializing it on the prefab leaks global
+  physics settings into ProjectSettings via editor OnValidate, and FishNet
+  stashes fixedDeltaTime in PlayerPrefs (`SavedFixedTimeFN`) which can
+  poison later sessions. Networked physics runs at 1/TickRate.
 - **Snapshot interpolation** for remote tanks/projectiles, ~100 ms buffer.
 - **Tick rate 30 Hz**. At 10 players this is ~10–20 KB/s per client — headroom
   is enormous; do not micro-optimize bandwidth before profiling.

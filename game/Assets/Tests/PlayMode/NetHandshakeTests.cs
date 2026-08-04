@@ -18,10 +18,17 @@ namespace Potshot.Tests
         static ushort _nextPort = 7801;
 
         NetworkManager _nm;
+        SimulationMode _savedSimMode;
+        float _savedFixedDelta;
 
         [SetUp]
         public void SetUp()
         {
+            // FishNet's TimeManager physics mode mutates GLOBAL physics
+            // state and never restores it mid-run (M2b review).
+            _savedSimMode = Physics.simulationMode;
+            _savedFixedDelta = Time.fixedDeltaTime;
+
             var prefab = Resources.Load<GameObject>("Prefabs/NetworkHub");
             Assert.That(prefab, Is.Not.Null, "NetworkHub.prefab missing — run NetworkFactory");
             _nm = Object.Instantiate(prefab).GetComponent<NetworkManager>();
@@ -42,6 +49,9 @@ namespace Potshot.Tests
             // next test's hub must not spawn until this one is truly gone.
             yield return null;
             yield return null;
+
+            Physics.simulationMode = _savedSimMode;
+            Time.fixedDeltaTime = _savedFixedDelta;
         }
 
         IEnumerator WaitFor(System.Func<bool> done, float seconds)

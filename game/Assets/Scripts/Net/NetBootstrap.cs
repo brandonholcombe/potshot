@@ -21,6 +21,11 @@ namespace Potshot.Net
                 nm = UnityEngine.Object.Instantiate(prefab).GetComponent<NetworkManager>();
                 nm.gameObject.name = "NetworkHub";
                 UnityEngine.Object.DontDestroyOnLoad(nm.gameObject);
+                // Rigidbody prediction requires TimeManager-driven physics.
+                // Set at RUNTIME only — serializing it on the prefab leaks
+                // global simulation mode into ProjectSettings via editor
+                // OnValidate (M2b). Tests restore globals in teardown.
+                nm.TimeManager.SetPhysicsMode(FishNet.Managing.Timing.PhysicsMode.TimeManager);
             }
             return nm;
         }

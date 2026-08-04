@@ -24,6 +24,10 @@ namespace Potshot
         /// restores it directly (M1g review).</summary>
         public TankMotor.BoostState Boost;
 
+        /// <summary>Networked sessions: NetworkTank drives the motor via
+        /// the replicate path; this controller only does cosmetics.</summary>
+        public bool ExternallyDriven;
+
         public ITankInput InputSource { get; set; }
 
         Rigidbody _body;
@@ -34,9 +38,13 @@ namespace Potshot
             _body = GetComponent<Rigidbody>();
         }
 
+        /// <summary>Networked path: keeps the turret cosmetic fed with the
+        /// authoritative sample.</summary>
+        public void SetNetworkSample(in TankInputSample sample) => _lastSample = sample;
+
         void FixedUpdate()
         {
-            if (InputSource == null || spec == null) return;
+            if (ExternallyDriven || InputSource == null || spec == null) return;
             var sample = InputSource.Sample();
             if (InputFrozen)
             {

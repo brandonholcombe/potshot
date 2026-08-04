@@ -1,7 +1,7 @@
 # M2b — Server-authoritative tank movement with client prediction
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — owned tank drives through replicate/reconcile in-process; gate 48/48; offline suite intact
 
 The netcode core: tanks become NetworkBehaviours; the owner predicts with
 the SAME TankMotor.Step the server runs; reconciliation restores pose,

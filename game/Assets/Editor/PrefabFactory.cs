@@ -23,6 +23,7 @@ namespace Potshot.EditorTools
             CreateProjectilePrefab();
             CreateWeaponPickupPrefab();
             CreateTankPrefab(spec);
+            CreateTankNetPrefab();
             AssetDatabase.SaveAssets();
             Debug.Log("[PrefabFactory] CreateAll done");
         }
@@ -48,6 +49,46 @@ namespace Potshot.EditorTools
                 Directory.CreateDirectory(PrefabDir);
                 PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/WeaponPickup.prefab");
                 Debug.Log("[PrefabFactory] WeaponPickup.prefab saved");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        /// <summary>Networked tank = separate prefab: NetworkObject
+        /// deactivates its object when no server/client runs, which would
+        /// break every offline scene/test if put on Tank.prefab (M2b
+        /// review). Rebuild AFTER CreateTankPrefab.</summary>
+        public static void CreateTankNetPrefab()
+        {
+            var tankPrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/Tank.prefab");
+            var root = (GameObject)PrefabUtility.InstantiatePrefab(tankPrefab);
+            try
+            {
+                PrefabUtility.UnpackPrefabInstance(root,
+                    PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                root.name = "TankNet";
+
+                var nob = root.AddComponent<FishNet.Object.NetworkObject>();
+                var so = new SerializedObject(nob);
+                var enable = so.FindProperty("_enablePrediction");
+                if (enable == null)
+                {
+                    Debug.LogError("[PrefabFactory] NetworkObject._enablePrediction not found — FishNet API drift");
+                    EditorApplication.Exit(1);
+                    return;
+                }
+                enable.boolValue = true;
+                var predictionType = so.FindProperty("_predictionType");
+                int rbIndex = System.Array.IndexOf(predictionType.enumNames, "Rigidbody");
+                predictionType.enumValueIndex = rbIndex;
+                so.ApplyModifiedPropertiesWithoutUndo();
+
+                root.AddComponent<Potshot.Net.NetworkTank>();
+
+                PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/TankNet.prefab");
+                Debug.Log("[PrefabFactory] TankNet.prefab saved");
             }
             finally
             {

@@ -24,8 +24,23 @@ namespace Potshot.EditorTools
             {
                 var tugboat = root.AddComponent<Tugboat>();
                 tugboat.SetPort(7777);
+
+                // Explicit TimeManager component; physics mode stays at the
+                // Unity default HERE. Serializing PhysicsMode.TimeManager on
+                // the prefab runs FishNet's OnValidate in the EDITOR, which
+                // flips global simulation mode and Unity persists it into
+                // ProjectSettings — broke every offline physics test (M2b).
+                // NetBootstrap.EnsureHub() sets the mode at runtime instead.
+                root.AddComponent<FishNet.Managing.Timing.TimeManager>();
+
                 var nm = root.AddComponent<NetworkManager>();
                 root.AddComponent<VersionAuthenticator>();
+
+                var spawner = root.AddComponent<Potshot.Net.PlayerSpawner>();
+                var tankNet = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/Resources/Prefabs/TankNet.prefab");
+                if (tankNet != null)
+                    spawner.tankNetPrefab = tankNet.GetComponent<FishNet.Object.NetworkObject>();
 
                 // FishNet requires a spawnable-prefabs collection; wire the
                 // auto-generated DefaultPrefabObjects (SerializedObject —
