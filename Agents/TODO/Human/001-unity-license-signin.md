@@ -1,6 +1,6 @@
 # Human task 001 — Activate Unity license
 
-## Status: Open
+## Status: Done (2026-08-04)
 ## Estimated: 5–10 minutes
 
 Unity 6000.1.14f1 is installed but has **no activated license**, so batchmode
