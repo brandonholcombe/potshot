@@ -1,4 +1,4 @@
-# M1a — Unity MCP trial + screenshot rig
+# M1b — Screenshot rig (agents see the game)
 
 ## Author: (assign on activation)
 ## Status: Backlog — first task of M1
