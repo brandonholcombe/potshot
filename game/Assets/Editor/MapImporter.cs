@@ -22,8 +22,15 @@ namespace Potshot.EditorTools
     /// </summary>
     public static class MapImporter
     {
-        public const float WorldWidth = 48f;
+        // Passage sizing (playtest 2026-08-04: doorways too tight): the
+        // world SCALE carries passage width — corridor-carving approaches
+        // were tried and reverted (walls thinner than the carve radius get
+        // deleted, mutilating forts/ridges; see git history). At 62 u the
+        // drawn ~2.5 u passages become ~3.2 u — comfortable for a 1.6 u
+        // tank. Explicit dash tunnels are carved generously on top.
+        public const float WorldWidth = 62f;
         public const float CellSize = 0.6f;
+        const float DashCarveRadius = 2.6f;
 
         public const byte Open = 0, Cliff = 1, Wall = 2, Water = 3;
 
@@ -38,6 +45,71 @@ namespace Potshot.EditorTools
             public Vector3 CellToWorld(int cx, int cy) => new(
                 (cx + 0.5f) * CellSize - WorldWidth * 0.5f, 0f,
                 (cy + 0.5f) * CellSize - worldHeight * 0.5f);
+
+            /// <summary>Open cells pinched between non-open cells on
+            /// opposite sides within halfCells — post-widening this should
+            /// be ~zero (doorway-width regression metric).</summary>
+            public int TightCells(int halfCells) => TightCellList(halfCells).Count;
+
+            public List<(int x, int y)> TightCellList(int halfCells)
+            {
+                var main = MainRegionMask();
+                var tight = new List<(int, int)>();
+                var axes = new[] { (1, 0), (0, 1), (1, 1), (1, -1) };
+                for (int x = 1; x < cols - 1; x++)
+                    for (int y = 1; y < rows - 1; y++)
+                    {
+                        // Sealed pockets aren't doorways — main region only.
+                        if (cells[x, y] != Open || !main[x, y]) continue;
+                        foreach (var (dx, dy) in axes)
+                        {
+                            bool hitA = false, hitB = false;
+                            for (int s = 1; s <= halfCells; s++)
+                            {
+                                int ax = x + dx * s, ay = y + dy * s;
+                                int bx = x - dx * s, by = y - dy * s;
+                                if (ax >= 0 && ay >= 0 && ax < cols && ay < rows
+                                    && cells[ax, ay] != Open) hitA = true;
+                                if (bx >= 0 && by >= 0 && bx < cols && by < rows
+                                    && cells[bx, by] != Open) hitB = true;
+                            }
+                            if (hitA && hitB) { tight.Add((x, y)); break; }
+                        }
+                    }
+                return tight;
+            }
+
+            bool[,] MainRegionMask()
+            {
+                var seen = new bool[cols, rows];
+                var best = new List<(int, int)>();
+                for (int x = 0; x < cols; x++)
+                    for (int y = 0; y < rows; y++)
+                    {
+                        if (cells[x, y] != Open || seen[x, y]) continue;
+                        var region = new List<(int, int)>();
+                        var stack = new Stack<(int, int)>();
+                        stack.Push((x, y));
+                        seen[x, y] = true;
+                        while (stack.Count > 0)
+                        {
+                            var (cx, cy) = stack.Pop();
+                            region.Add((cx, cy));
+                            foreach (var (nx, ny) in new[]
+                                { (cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1) })
+                            {
+                                if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+                                if (seen[nx, ny] || cells[nx, ny] != Open) continue;
+                                seen[nx, ny] = true;
+                                stack.Push((nx, ny));
+                            }
+                        }
+                        if (region.Count > best.Count) best = region;
+                    }
+                var mask = new bool[cols, rows];
+                foreach (var (x, y) in best) mask[x, y] = true;
+                return mask;
+            }
 
             /// <summary>Fraction of open cells reachable from the largest
             /// open region — the tunnel/bridge pathability metric.</summary>
@@ -117,13 +189,15 @@ namespace Potshot.EditorTools
 
             // Brown components: big = cliff outlines, small = tunnel dashes.
             var comps = Components(brown, w, h);
-            int biggest = comps.Count > 0 ? comps.Max(c => c.Count) : 0;
             var outline = new bool[w * h];
             var dashes = new bool[w * h];
             var brownComps = new List<List<int>>();
             foreach (var comp in comps)
             {
-                bool isDash = comp.Count < Mathf.Max(400, biggest / 5);
+                // Absolute threshold: dashes are ~30-100 px strokes. A
+                // relative (biggest/5) rule misclassified Clifside Battle's
+                // thinner cliff outlines as dashes and erased them.
+                bool isDash = comp.Count < 400;
                 foreach (int i in comp) (isDash ? dashes : outline)[i] = true;
                 if (!isDash) brownComps.Add(comp);
             }
@@ -160,7 +234,7 @@ namespace Potshot.EditorTools
                 cliffSolid[i] = !outside[i] || outline[i];
 
             // Tunnels: carve the dashed paths through the solid at tank width.
-            var carve = Dilate(dashes, w, h, Mathf.RoundToInt(1.6f / unitsPerPixel));
+            var carve = Dilate(dashes, w, h, Mathf.RoundToInt(DashCarveRadius / unitsPerPixel));
             for (int i = 0; i < w * h; i++)
                 if (carve[i]) cliffSolid[i] = false;
 
@@ -208,11 +282,19 @@ namespace Potshot.EditorTools
                     else if (nWater * 4 >= n) data.cells[cx, cy] = Water;
                 }
 
-            // Perimeter containment ring.
+            // Perimeter containment ring — BEFORE grid widening, so pinches
+            // against the ring get widened too (they were the unfixable 24).
             for (int cx = 0; cx < cols; cx++)
             { data.cells[cx, 0] = Cliff; data.cells[cx, rows - 1] = Cliff; }
             for (int cy = 0; cy < rows; cy++)
             { data.cells[0, cy] = Cliff; data.cells[cols - 1, cy] = Cliff; }
+
+            // NOTE: no grid-level wall clearing — tried and reverted; it
+            // cannot distinguish doorways from legitimate tight geometry
+            // (hollow forts, box obstacles, bridges between water) and
+            // dismantles them. Doorway width is guaranteed by the source-
+            // resolution iterative widening above; TightCells() remains as
+            // a coarse regression metric only.
 
             return data;
         }
@@ -450,6 +532,51 @@ namespace Potshot.EditorTools
             }
             var result = new bool[w * h];
             for (int i = 0; i < w * h; i++) result[i] = dist[i] <= radius;
+            return result;
+        }
+
+        /// <summary>Open pixels with blockers on opposite sides within
+        /// halfWidth along any of 4 axes — i.e. too-tight passages.</summary>
+        static bool[] NarrowCorridors(bool[] blocked, int w, int h, int halfWidth)
+        {
+            var result = new bool[w * h];
+            var axes = new[] { (1, 0), (0, 1), (1, 1), (1, -1) };
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    int i = y * w + x;
+                    if (blocked[i]) continue;
+                    foreach (var (dx, dy) in axes)
+                    {
+                        bool hitA = false, hitB = false;
+                        for (int s = 1; s <= halfWidth && !hitA; s++)
+                        {
+                            int nx = x + dx * s, ny = y + dy * s;
+                            if (nx < 0 || ny < 0 || nx >= w || ny >= h) break;
+                            hitA = blocked[ny * w + nx];
+                        }
+                        if (!hitA) continue;
+                        for (int s = 1; s <= halfWidth && !hitB; s++)
+                        {
+                            int nx = x - dx * s, ny = y - dy * s;
+                            if (nx < 0 || ny < 0 || nx >= w || ny >= h) break;
+                            hitB = blocked[ny * w + nx];
+                        }
+                        if (hitB) { result[i] = true; break; }
+                    }
+                }
+            return result;
+        }
+
+        static bool[] LargestOpenRegion(bool[] blocked, int w, int h)
+        {
+            var inverse = new bool[w * h];
+            for (int i = 0; i < w * h; i++) inverse[i] = !blocked[i];
+            var comps = Components(inverse, w, h);
+            var result = new bool[w * h];
+            if (comps.Count == 0) return result;
+            foreach (int i in comps.OrderByDescending(c => c.Count).First())
+                result[i] = true;
             return result;
         }
 

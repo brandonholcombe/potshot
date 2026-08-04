@@ -15,9 +15,11 @@ namespace Potshot.Tests
 
         static int Count(MapImporter.MapData d, byte type)
         {
+            // Interior only — the perimeter ring is cliff-typed and once
+            // masked a map whose real cliffs had all been erased.
             int n = 0;
-            for (int x = 0; x < d.cols; x++)
-                for (int y = 0; y < d.rows; y++)
+            for (int x = 2; x < d.cols - 2; x++)
+                for (int y = 2; y < d.rows - 2; y++)
                     if (d.cells[x, y] == type) n++;
             return n;
         }
@@ -33,6 +35,28 @@ namespace Potshot.Tests
             // dead-ended tunnel fails this, not just 'some open cells').
             Assert.That(d.OpenConnectivity(), Is.GreaterThan(0.85f),
                 "tunnels/dash carving failed — open space is fragmented");
+        }
+
+        [Test]
+        public void AllMaps_HaveNoTightDoorways()
+        {
+            // Playtest 2026-08-04: doorways too small. Post-widening, open
+            // cells pinched within 2 cells (~2.4 u corridors) must be rare
+            // (angled cliff edges legitimately graze the detector).
+            foreach (var file in new[] { "Cliffs and tunnels.png",
+                "Clifside Battle.png", "forts bridges and rivers.png" })
+            {
+                var d = Load(file);
+                int tight = d.TightCells(2);
+                // Loose regression bound only. The count includes legit
+                // tight geometry (nooks, bridge cells, border slivers) and
+                // GROWS when carving connects new areas — absolute values
+                // are not a quality score. Structure asserts + overview
+                // probes are the real gates (a metric-chasing widener
+                // dissolved a whole map on 2026-08-04; never again).
+                Assert.That(tight, Is.LessThan(300),
+                    $"{file}: {tight} tight cells — gross narrowing regression");
+            }
         }
 
         [Test]
