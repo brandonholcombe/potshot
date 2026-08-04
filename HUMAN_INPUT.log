@@ -2,3 +2,4 @@
 # Format: <date> | <who> | <minutes> | <what>
 # The experiment: build Potshot with as little human input as possible.
 2026-08-04 | Brandon | ~5 | Unity Hub sign-in + Personal license activation (Human task 001)
+2026-08-04 | Brandon | ~10 | First feel playtest (Mac dev build): tanks/camera/aim/ricochet good; requested self-damage on ricochets

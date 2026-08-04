@@ -121,6 +121,27 @@ namespace Potshot.Tests
         }
 
         [UnityTest]
+        public IEnumerator Cannon_RicochetCanSelfDamage()
+        {
+            // Perpendicular wall dead ahead: the shell reflects straight
+            // back into the shooter. Immunity lifts on ricochet (playtest
+            // feedback 2026-08-04: bank shots must endanger their owner).
+            var wall = Env(GameObject.CreatePrimitive(PrimitiveType.Cube));
+            wall.transform.position = new Vector3(0f, 0.5f, 6f);
+            wall.transform.localScale = new Vector3(8f, 1f, 0.5f);
+
+            var myHp = _shooter.GetComponent<Damageable>();
+            _weapon.Equip(Spec("cannon"));
+            yield return FireOnce(new Vector3(0f, 0f, 50f));
+
+            for (int i = 0; i < 120 && myHp.Health >= myHp.maxHealth; i++)
+                yield return new WaitForFixedUpdate();
+
+            Assert.That(myHp.Health, Is.LessThan(myHp.maxHealth),
+                "own ricochet failed to damage the shooter");
+        }
+
+        [UnityTest]
         public IEnumerator Spread_SpawnsFivePellets()
         {
             _weapon.Equip(Spec("spread"));

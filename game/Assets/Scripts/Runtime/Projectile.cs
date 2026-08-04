@@ -12,6 +12,8 @@ namespace Potshot
         int _ricochetsLeft;
         float _aoeRadius;
         GameObject _firer;
+        Collider _myCollider;
+        Collider[] _firerColliders;
         Rigidbody _rb;
         Vector3 _cachedVel; // pre-solve velocity: OnCollisionEnter sees the
                             // post-solve remainder, which must not be
@@ -46,9 +48,11 @@ namespace Potshot
 
             // Shooter immunity: collider pair ignore, NOT a time window —
             // a time window would also skip walls/tanks (M1d review).
-            var myCol = go.GetComponent<Collider>();
-            foreach (var fc in firer.GetComponentsInChildren<Collider>())
-                Physics.IgnoreCollision(myCol, fc, true);
+            // Lifted again on ricochet: your own bank shots can hit you
+            // (playtest feedback, 2026-08-04).
+            p._myCollider = go.GetComponent<Collider>();
+            p._firerColliders = firer.GetComponentsInChildren<Collider>();
+            p.SetFirerImmunity(true);
 
             return p;
         }
@@ -74,6 +78,7 @@ namespace Potshot
             if (_ricochetsLeft > 0)
             {
                 _ricochetsLeft--;
+                SetFirerImmunity(false); // bounced shells hurt their owner too
                 var normal = collision.GetContact(0).normal;
                 var reflected = Vector3.Reflect(_cachedVel, normal);
                 if (reflected.sqrMagnitude < 0.01f) { Impact(); return; }
@@ -85,6 +90,14 @@ namespace Potshot
             }
 
             Impact();
+        }
+
+        void SetFirerImmunity(bool ignore)
+        {
+            if (_myCollider == null || _firerColliders == null) return;
+            foreach (var fc in _firerColliders)
+                if (fc != null && fc.enabled && fc.gameObject.activeInHierarchy)
+                    Physics.IgnoreCollision(_myCollider, fc, ignore);
         }
 
         void Impact()
