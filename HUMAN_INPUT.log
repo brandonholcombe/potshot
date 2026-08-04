@@ -1,0 +1,3 @@
+# HUMAN_INPUT.log — every human touch on this project, append-only.
+# Format: <date> | <who> | <minutes> | <what>
+# The experiment: build Potshot with as little human input as possible.
