@@ -1,7 +1,7 @@
 # M0b — Unity project bring-up + test pipeline
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — tests green: EditMode 2/2, PlayMode 1/1
 
 ## Context
 

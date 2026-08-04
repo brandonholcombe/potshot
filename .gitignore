@@ -2,6 +2,8 @@
 game/Library/
 game/Temp/
 game/Obj/
+game/obj/
+game/Assets/InitTestScene*
 game/Logs/
 game/UserSettings/
 game/MemoryCaptures/

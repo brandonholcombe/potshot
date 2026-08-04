@@ -4,7 +4,7 @@
 
 | # | Milestone | Status | Notes |
 |---|-----------|--------|-------|
-| M0 | Scaffold: repo, template, docs, hooks, Unity project, QA harness spec | 🚧 In progress | Blocked on Unity license (Human task 001) for project creation |
+| M0 | Scaffold: repo, template, docs, hooks, Unity project, test pipeline | ✅ Complete (2026-08-04) | Screenshot rig + Unity MCP trial moved to M1a |
 | M1 | Core game offline: tank controller, projectiles, 3–4 weapons, 1 arena, bots | 📋 Backlog | The "is it fun" gate |
 | M2 | FishNet: server-auth movement, prediction, networked weapons, 2-client test | 📋 Backlog | |
 | M3 | Dedicated server: Linux headless build, Docker, version handshake | 📋 Backlog | Needs linux-server Unity module |
@@ -19,12 +19,13 @@
 - [x] Symbolic alignment from the haxley baseline template (`symbols/` + align.py + hook + CI); 5 symbols, all aligned
 - [x] Unity 6000.1.14f1 present on build machine
 - [x] Unity Hub installed (by agent, headless)
-- [ ] Unity license activated — **Human task 001**
+- [x] Unity license activated — Human task 001 (HUMAN_INPUT.log entry 1)
 - [x] Linux Dedicated Server module installed (agent, headless Hub CLI)
-- [ ] Unity project created at `game/` (agent, after license)
+- [x] Unity project created at `game/` headlessly; ProjectConfigurator applied (1/60 fixed timestep, kodloki/Potshot identity)
 - [x] git init + github/gitea remotes + first push
 - [x] Registered in kodloki `PROJECT_REGISTRY.md`
-- [ ] QA harness (screenshot rig + headless multi-client runner) — M0 deliverable, may slip to early M1
+- [x] Test pipeline green end-to-end: `run-tests.sh` → EditMode 2/2, PlayMode 1/1 (M0b, reviewed by sonnet-reviewer)
+- [ ] Screenshot rig + Unity MCP trial → M1a backlog task
 
 ## Experiment metric
 
