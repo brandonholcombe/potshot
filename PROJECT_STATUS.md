@@ -19,10 +19,10 @@
 - [x] Unity 6000.1.14f1 present on build machine
 - [x] Unity Hub installed (by agent, headless)
 - [ ] Unity license activated — **Human task 001**
-- [ ] Linux Dedicated Server module installed (agent, after license)
+- [x] Linux Dedicated Server module installed (agent, headless Hub CLI)
 - [ ] Unity project created at `game/` (agent, after license)
-- [ ] git init + github/gitea remotes + first push
-- [ ] Registered in kodloki `PROJECT_REGISTRY.md`
+- [x] git init + github/gitea remotes + first push
+- [x] Registered in kodloki `PROJECT_REGISTRY.md`
 - [ ] QA harness (screenshot rig + headless multi-client runner) — M0 deliverable, may slip to early M1
 
 ## Experiment metric
