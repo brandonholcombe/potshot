@@ -253,6 +253,7 @@ GameObject:
   - component: {fileID: 6771724729651703708}
   - component: {fileID: 8067518561484275712}
   - component: {fileID: 7235748039230268012}
+  - component: {fileID: 327788586039855101}
   m_Layer: 0
   m_Name: Tank
   m_TagString: Untagged
@@ -351,6 +352,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   current: {fileID: 11400000, guid: 3dadb624ecad24214916caa50b252bcc, type: 2}
+  defaultWeapon: {fileID: 11400000, guid: 3dadb624ecad24214916caa50b252bcc, type: 2}
   muzzle: {fileID: 6059831790284758228}
   projectilePrefab: {fileID: 8437356447482231915, guid: 14cb1baa9449e4df4b84362093be4767, type: 3}
 --- !u!114 &6771724729651703708
@@ -390,6 +392,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5a94200fbbb048b2a4601be9474f83d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &327788586039855101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6551562444630739153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1496b53f2978f4a56bdfe9ddd7e069d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &8897551397149678987

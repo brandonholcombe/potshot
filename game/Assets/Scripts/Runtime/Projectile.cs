@@ -105,7 +105,8 @@ namespace Potshot
             if (_aoeRadius > 0f)
             {
                 var hit = new HashSet<Damageable>();
-                foreach (var col in Physics.OverlapSphere(transform.position, _aoeRadius))
+                foreach (var col in Physics.OverlapSphere(
+                    transform.position, _aoeRadius, ~0, QueryTriggerInteraction.Ignore))
                 {
                     var d = col.GetComponentInParent<Damageable>();
                     if (d != null && hit.Add(d)) d.TakeDamage(_damage, _firer);

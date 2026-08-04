@@ -22,6 +22,7 @@ namespace Potshot.EditorTools
             public float spread;
             public bool gravity;
             public float aoe, scale;
+            public int ammo;
             public Color color;
         }
 
@@ -29,19 +30,19 @@ namespace Potshot.EditorTools
         {
             new Row { id = "cannon", name = "Cannon", cooldown = 0.8f, speed = 14f,
                       damage = 50f, ricochets = 1, pellets = 1, spread = 0f,
-                      gravity = false, aoe = 0f, scale = 0.3f,
+                      gravity = false, aoe = 0f, scale = 0.3f, ammo = 0,
                       color = new Color(0.15f, 0.15f, 0.15f) },
             new Row { id = "spread", name = "Spread Shot", cooldown = 1.0f, speed = 12f,
                       damage = 15f, ricochets = 0, pellets = 5, spread = 30f,
-                      gravity = false, aoe = 0f, scale = 0.2f,
+                      gravity = false, aoe = 0f, scale = 0.2f, ammo = 8,
                       color = new Color(0.9f, 0.5f, 0.1f) },
             new Row { id = "mortar", name = "Mortar", cooldown = 1.5f, speed = 0f,
                       damage = 60f, ricochets = 0, pellets = 1, spread = 0f,
-                      gravity = true, aoe = 2.5f, scale = 0.4f,
+                      gravity = true, aoe = 2.5f, scale = 0.4f, ammo = 5,
                       color = new Color(0.2f, 0.6f, 0.2f) },
             new Row { id = "mg", name = "Machine Gun", cooldown = 0.1f, speed = 30f,
                       damage = 8f, ricochets = 0, pellets = 1, spread = 3f,
-                      gravity = false, aoe = 0f, scale = 0.15f,
+                      gravity = false, aoe = 0f, scale = 0.15f, ammo = 40,
                       color = new Color(0.95f, 0.85f, 0.2f) },
         };
 
@@ -68,6 +69,7 @@ namespace Potshot.EditorTools
                 spec.useGravity = row.gravity;
                 spec.aoeRadius = row.aoe;
                 spec.projectileScale = row.scale;
+                spec.ammo = row.ammo;
                 spec.projectileMaterial =
                     MaterialFactory.GetOrCreate(MatDir, $"Projectile_{row.id}", row.color);
                 EditorUtility.SetDirty(spec);

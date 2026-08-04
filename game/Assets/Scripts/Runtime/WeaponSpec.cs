@@ -19,6 +19,7 @@ namespace Potshot
         public float spreadAngleDeg;        // fan when pelletCount>1, jitter when 1
         public bool useGravity;             // mortar lob
         public float aoeRadius;             // >0: AoE on impact, no direct damage
+        public int ammo;                     // 0 = infinite (default cannon)
         public float projectileScale = 0.3f;
         public Material projectileMaterial; // saved asset (no instanced leaks)
     }

@@ -38,6 +38,15 @@ namespace Potshot.Tests
         }
 
         [Test]
+        public void AmmoTable_MatchesDesign()
+        {
+            Assert.That(Load("cannon").ammo, Is.EqualTo(0), "cannon is infinite");
+            Assert.That(Load("spread").ammo, Is.EqualTo(8));
+            Assert.That(Load("mortar").ammo, Is.EqualTo(5));
+            Assert.That(Load("mg").ammo, Is.EqualTo(40));
+        }
+
+        [Test]
         public void AllWeapons_HaveMaterialAssets()
         {
             foreach (var id in new[] { "cannon", "spread", "mortar", "mg" })

@@ -22,5 +22,6 @@ MonoBehaviour:
   spreadAngleDeg: 0
   useGravity: 0
   aoeRadius: 0
+  ammo: 0
   projectileScale: 0.3
   projectileMaterial: {fileID: 2100000, guid: 5e4a31e25294c44348d577c55b33bfa8, type: 2}

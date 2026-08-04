@@ -20,9 +20,38 @@ namespace Potshot.EditorTools
             WeaponFactory.CreateSpecs();
             var spec = CreateTankSpec();
             CreateProjectilePrefab();
+            CreateWeaponPickupPrefab();
             CreateTankPrefab(spec);
             AssetDatabase.SaveAssets();
             Debug.Log("[PrefabFactory] CreateAll done");
+        }
+
+        public static void CreateWeaponPickupPrefab()
+        {
+            var root = new GameObject("WeaponPickup");
+            try
+            {
+                var trigger = root.AddComponent<BoxCollider>();
+                trigger.isTrigger = true;
+                trigger.size = Vector3.one;
+
+                // Spin the collider-less visual child, not the trigger.
+                var visual = Visual(root.transform, PrimitiveType.Cube, "Visual",
+                    Vector3.zero, Vector3.one * 0.6f,
+                    MaterialFactory.GetOrCreate(MatDir, "PickupDefault", Color.white));
+                visual.localRotation = Quaternion.Euler(35f, 45f, 0f);
+
+                var pickup = root.AddComponent<WeaponPickup>();
+                pickup.visual = visual;
+
+                Directory.CreateDirectory(PrefabDir);
+                PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/WeaponPickup.prefab");
+                Debug.Log("[PrefabFactory] WeaponPickup.prefab saved");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
         }
 
         public static void CreateProjectilePrefab()
@@ -128,6 +157,7 @@ namespace Potshot.EditorTools
                     $"{PrefabDir}/Projectile.prefab");
                 weapon.current = AssetDatabase.LoadAssetAtPath<WeaponSpec>(
                     "Assets/Resources/Specs/Weapons/cannon.asset");
+                weapon.defaultWeapon = weapon.current;
 
                 var controller = root.AddComponent<TankController>();
                 controller.spec = spec;
@@ -135,6 +165,7 @@ namespace Potshot.EditorTools
                 controller.weapon = weapon;
                 root.AddComponent<PlayerTankInput>();
                 root.AddComponent<PlaytestHotkeys>();
+                root.AddComponent<DevHud>();
 
                 Directory.CreateDirectory(PrefabDir);
                 PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/Tank.prefab");

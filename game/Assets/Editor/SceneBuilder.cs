@@ -105,6 +105,33 @@ namespace Potshot.EditorTools
                 dummy.name = "TargetDummy";
                 Object.DestroyImmediate(dummy.GetComponent<PlayerTankInput>());
                 Object.DestroyImmediate(dummy.GetComponent<PlaytestHotkeys>());
+                Object.DestroyImmediate(dummy.GetComponent<DevHud>()); // one HUD only
+            }
+
+            // Weapon pickup pads
+            var pickupPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Resources/Prefabs/WeaponPickup.prefab");
+            var pool = new[] { "spread", "mortar", "mg" };
+            var poolSpecs = new WeaponSpec[pool.Length];
+            for (int i = 0; i < pool.Length; i++)
+                poolSpecs[i] = AssetDatabase.LoadAssetAtPath<WeaponSpec>(
+                    $"Assets/Resources/Specs/Weapons/{pool[i]}.asset");
+            var padMat = Mat("PickupPad", new Color(0.25f, 0.25f, 0.28f));
+            foreach (var pos in new[]
+            {
+                new Vector3(-12f, 0f, -12f), new Vector3(12f, 0f, -12f),
+                new Vector3(-12f, 0f, 12f), new Vector3(12f, 0f, 12f),
+            })
+            {
+                var padVisual = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                Object.DestroyImmediate(padVisual.GetComponent<Collider>());
+                padVisual.name = "PickupPad";
+                padVisual.transform.position = pos + new Vector3(0f, 0.05f, 0f);
+                padVisual.transform.localScale = new Vector3(2f, 0.05f, 2f);
+                padVisual.GetComponent<Renderer>().sharedMaterial = padMat;
+                var pad = padVisual.AddComponent<PickupPad>();
+                pad.pickupPrefab = pickupPrefab;
+                pad.weaponPool = poolSpecs;
             }
 
             var cam = new GameObject("FollowCamera").AddComponent<Camera>();

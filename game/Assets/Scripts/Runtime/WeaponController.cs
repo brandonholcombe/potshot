@@ -12,15 +12,29 @@ namespace Potshot
     public class WeaponController : MonoBehaviour
     {
         public WeaponSpec current;
+        public WeaponSpec defaultWeapon;
         public Transform muzzle;
         public GameObject projectilePrefab;
+
+        public int AmmoLeft { get; private set; }
 
         float _cooldown;
 
         public void Equip(WeaponSpec spec)
         {
             current = spec;
+            AmmoLeft = spec != null ? spec.ammo : 0;
+            // Clamp, don't zero: a fresh pickup must not skip an in-flight
+            // cooldown (equip-to-insta-fire exploit — M1e review).
+            if (current != null)
+                _cooldown = Mathf.Min(_cooldown, current.fireCooldown);
+        }
+
+        /// <summary>Respawn path (m1f): fresh default weapon, ready to fire.</summary>
+        public void ResetToDefault()
+        {
             _cooldown = 0f;
+            Equip(defaultWeapon);
         }
 
         /// <summary>Called by TankController each FixedUpdate.</summary>
@@ -30,6 +44,15 @@ namespace Potshot
             if (!sample.Fire || _cooldown > 0f || current == null) return;
             _cooldown = current.fireCooldown;
             Fire(sample.AimWorldPos);
+            ConsumeAmmo();
+        }
+
+        void ConsumeAmmo()
+        {
+            if (current == null || current.ammo <= 0) return; // infinite
+            AmmoLeft--;
+            if (AmmoLeft <= 0 && defaultWeapon != null && current != defaultWeapon)
+                Equip(defaultWeapon);
         }
 
         public void Fire(Vector3 aimWorldPos)

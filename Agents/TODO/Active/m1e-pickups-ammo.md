@@ -1,7 +1,7 @@
 # M1e — Weapon pickups + ammo (M1 slice c)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — gate 27/27 green (10 EditMode, 17 PlayMode); pads verified in probe
 
 Weapon economy from docs/gameplay.md: cannon is the infinite default;
 spread/mortar/mg are limited-ammo pickups that spawn on arena pads.

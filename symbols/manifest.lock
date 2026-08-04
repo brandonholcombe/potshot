@@ -1,6 +1,6 @@
 {
-  "root": "3fc36a67c72490d8",
-  "generated": "2026-08-04T20:37:44Z",
+  "root": "876beb053b27016d",
+  "generated": "2026-08-04T22:25:38Z",
   "status": "aligned",
   "symbols": {
     "architecture": {
@@ -41,11 +41,11 @@
       }
     },
     "gameplay": {
-      "hash": "ea1c11283e520589",
+      "hash": "90285679f72f35a3",
       "means": "gameplay: genre=top-down-tank-arena, max_players=10, mvp_mode=ffa-deathmatch",
       "docs": {
         "docs/gameplay.md": {
-          "hash": "af09e34bf3e7da9b",
+          "hash": "71c85f33446ae7e2",
           "status": "current"
         }
       },
