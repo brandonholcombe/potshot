@@ -43,13 +43,23 @@ settings). Re-running a builder must be idempotent.
 
 ## Seeing without eyes: the QA harness
 
-1. **Screenshot rig**: PlayMode test (or `-executeMethod` runner) that loads
-   a scene, drives scripted inputs N frames, calls
-   `ScreenCapture.CaptureScreenshot` at checkpoints into `game/Logs/qa/`.
-   Agents then Read the PNGs and judge composition/rendering. Note: PlayMode
-   rendering needs a non-`-nographics` run; on this Mac an off-screen window
-   is fine in batchmode-less CLI runs — see `scripts/` once the harness lands.
-2. **Headless netcode runner**: launches the server build + N client
+1. **Screenshot rig** (M1b, working): PNGs land in `game/Logs/qa/` for
+   agents to Read and judge. Two paths, both via `unity-gfx.sh` (windowed —
+   never over SSH; editor window appears briefly, no clicks):
+   ```bash
+   # Static scene composition (edit mode, fast):
+   scripts/unity-gfx.sh -executeMethod Potshot.EditorTools.QaScreenshots.RenderProbe \
+       [-potshotScene Assets/Scenes/Foo.unity]   # exits itself; do NOT pass -quit
+   # During simulation (Visual tests — editor-only asmdef, EnterPlayMode + QaCapture):
+   scripts/unity-gfx.sh -runTests -testPlatform EditMode \
+       -assemblyNames Potshot.Tests.Visual -testResults "$PWD/game/Logs/test-results/Visual.xml"
+   ```
+   Gotchas encoded in the code: editor-only test assemblies are EDITMODE
+   assemblies to Unity (hence EnterPlayMode, not -testPlatform PlayMode);
+   capture is synchronous camera→RenderTexture (no WaitForEndOfFrame);
+   Built-in RP assumed (loud failure if the project moves to URP/HDRP).
+   The batchmode merge gate excludes Visual tests via `-assemblyNames`.
+2. **Headless netcode runner** (M2): launches the server build + N client
    processes with synthetic input scripts, asserts on end-state (positions,
    kills, pickups) written to JSON, then exits nonzero on violation.
 3. **Feel numbers**: `docs/gameplay.md` feel targets are asserted in tests

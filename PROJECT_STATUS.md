@@ -5,7 +5,7 @@
 | # | Milestone | Status | Notes |
 |---|-----------|--------|-------|
 | M0 | Scaffold: repo, template, docs, hooks, Unity project, test pipeline | ✅ Complete (2026-08-04) | Screenshot rig + Unity MCP trial moved to M1a |
-| M1a | Unity MCP bridge (trial) | ✅ Complete (2026-08-04) | mcp-unity 1.4.0; editor-daemon.sh; trial verdict due at M1 end. Screenshot rig → m1b |
+| M1a | Unity MCP bridge (trial) | ✅ Complete (2026-08-04) | mcp-unity 1.4.0; editor-daemon.sh; trial verdict due at M1 end. m1b screenshot rig ✅ (probe + play-mode capture) |
 | M1 | Core game offline: tank controller, projectiles, 3–4 weapons, 1 arena, bots | 📋 Backlog | The "is it fun" gate |
 | M2 | FishNet: server-auth movement, prediction, networked weapons, 2-client test | 📋 Backlog | |
 | M3 | Dedicated server: Linux headless build, Docker, version handshake | 📋 Backlog | Needs linux-server Unity module |

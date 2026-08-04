@@ -1,7 +1,7 @@
 # M1b — Screenshot rig (agents see the game)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — probe + play-mode capture verified by agent-read PNGs; merge gate green and Visual-excluded. Deviation from reviewed design: Visual asmdef is EditMode+EnterPlayMode (editor-only asmdefs are EditMode to UTF), capture is sync RT (no WaitForEndOfFrame)
 
 Give agents visual verification: scripted runs that write PNGs to
 `game/Logs/qa/`, which agents then Read and judge. Replaces human eyeballs

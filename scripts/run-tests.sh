@@ -15,9 +15,14 @@ fi
 
 run_platform() {
     local platform="$1"
+    # Explicit assembly filter: Visual tests (Potshot.Tests.Visual) need
+    # graphics and MUST NOT run in this batchmode gate — they go through
+    # unity-gfx.sh (M1b review).
+    local assemblies="Potshot.Tests.$platform"
     echo "=== $platform tests ==="
     "$REPO_ROOT/scripts/unity.sh" \
         -runTests -testPlatform "$platform" \
+        -assemblyNames "$assemblies" \
         -testResults "$RESULTS_DIR/$platform.xml"
     local code=$?
     echo "$platform exit: $code (results: game/Logs/test-results/$platform.xml)"
