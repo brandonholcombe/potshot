@@ -33,8 +33,16 @@
 - **Snapshot interpolation** for remote tanks/projectiles, ~100 ms buffer.
 - **Tick rate 30 Hz**. At 10 players this is ~10–20 KB/s per client — headroom
   is enormous; do not micro-optimize bandwidth before profiling.
-- Projectiles: server-simulated; the firing client spawns an immediate local
-  visual-only shell that reconciles to the server one.
+- Projectiles (M2c): fully server-simulated NetworkObjects (ProjectileNet =
+  Projectile sim + NetworkTransform sync; clients destroy the sim component
+  and go kinematic). No client prediction of shells — at friends-latency the
+  ~RTT/2 delay is acceptable; a local visual tracer is an M5 feel option.
+  Firing runs in the replicate on fresh created ticks only (never replays).
+  Weapon/ammo/health sync via SyncVar<T>, mirrored into the local components
+  for HUD display. Death = Despawn + fresh Spawn (FishNet has no active-state
+  replication); NetFfaState (spawned singleton) owns scores
+  (SyncDictionary keyed by ClientId / negative bot ids) and respawns;
+  PlayerSpawner fills the arena with server-driven bots.
 - Hit registration: server-side, no lag compensation initially (friends on
   <100 ms; revisit if playtests complain about "I dodged that").
 

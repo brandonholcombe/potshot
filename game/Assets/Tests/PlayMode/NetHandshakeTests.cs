@@ -33,6 +33,9 @@ namespace Potshot.Tests
             Assert.That(prefab, Is.Not.Null, "NetworkHub.prefab missing — run NetworkFactory");
             _nm = Object.Instantiate(prefab).GetComponent<NetworkManager>();
             _nm.GetComponent<Tugboat>().SetPort(_nextPort++);
+            // These fixtures test movement/handshake, not combat — server
+            // bots would shoot the test subject (M2c).
+            _nm.GetComponent<PlayerSpawner>().botCount = 0;
         }
 
         [UnityTearDown]

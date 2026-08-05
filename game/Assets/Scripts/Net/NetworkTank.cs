@@ -44,11 +44,13 @@ namespace Potshot.Net
 
         TankController _controller;
         Rigidbody _rb;
+        NetworkWeapon _weapon;
 
         public override void OnStartNetwork()
         {
             _controller = GetComponent<TankController>();
             _rb = GetComponent<Rigidbody>();
+            _weapon = GetComponent<NetworkWeapon>();
             _controller.ExternallyDriven = true;
             SetTickCallbacks(TickCallback.Tick | TickCallback.PostTick);
         }
@@ -121,7 +123,12 @@ namespace Potshot.Net
             _controller.SetNetworkSample(in sample);
             TankMotor.Step(_rb, in sample, _controller.spec,
                 ref _controller.Boost, (float)TimeManager.TickDelta);
-            // Weapons stay local/disabled on networked tanks until M2c.
+            // Server-only firing (M2c): clients never spawn projectiles —
+            // shells arrive as server-spawned synced objects. Fire only on
+            // fresh created ticks, never replays (flags enum in 4.7.2).
+            if (IsServerStarted && _weapon != null
+                && state.ContainsCreated() && !state.IsReplayed())
+                _weapon.ServerTick(in sample, (float)TimeManager.TickDelta);
         }
 
         public override void CreateReconcile()

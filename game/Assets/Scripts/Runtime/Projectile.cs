@@ -24,16 +24,26 @@ namespace Potshot
             GameObject prefab, Vector3 pos, Vector3 velocity,
             WeaponSpec spec, GameObject firer)
         {
+            var go = Object.Instantiate(prefab, pos,
+                Quaternion.LookRotation(velocity.normalized));
+            var p = go.GetComponent<Projectile>();
+            Configure(p, velocity, spec, firer);
+            return p;
+        }
+
+        /// <summary>Shared by offline Spawn and the networked spawn path
+        /// (NetworkWeapon instantiates the networked prefab itself).</summary>
+        public static void Configure(
+            Projectile p, Vector3 velocity, WeaponSpec spec, GameObject firer)
+        {
             // Belt-and-braces: RuntimeInitializeOnLoadMethod does not fire
             // in every play-mode entry path (EnterPlayMode-driven tests).
             Physics.IgnoreLayerCollision(
                 PotshotLayers.Projectile, PotshotLayers.Projectile, true);
 
-            var go = Object.Instantiate(prefab, pos,
-                Quaternion.LookRotation(velocity.normalized));
+            var go = p.gameObject;
             go.transform.localScale = Vector3.one * spec.projectileScale;
 
-            var p = go.GetComponent<Projectile>();
             p._damage = spec.damage;
             p._ricochetsLeft = spec.ricochets;
             p._aoeRadius = spec.aoeRadius;
@@ -53,8 +63,6 @@ namespace Potshot
             p._myCollider = go.GetComponent<Collider>();
             p._firerColliders = firer.GetComponentsInChildren<Collider>();
             p.SetFirerImmunity(true);
-
-            return p;
         }
 
         void FixedUpdate()

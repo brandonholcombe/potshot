@@ -138,20 +138,11 @@ namespace Potshot
 
         Vector3 PickSpawn(TankController forTank)
         {
-            if (spawnPoints.Length == 0)
-                return new Vector3(0f, 0.1f, 0f);
-            var living = _tanks.Where(t =>
-                t != null && t != forTank && t.gameObject.activeInHierarchy).ToList();
-            if (living.Count == 0) return spawnPoints[0];
-
-            Vector3 best = spawnPoints[0];
-            float bestScore = float.MinValue;
-            foreach (var p in spawnPoints)
-            {
-                float nearest = living.Min(t => (t.transform.position - p).sqrMagnitude);
-                if (nearest > bestScore) { bestScore = nearest; best = p; }
-            }
-            return best;
+            var living = _tanks
+                .Where(t => t != null && t != forTank && t.gameObject.activeInHierarchy)
+                .Select(t => t.transform.position)
+                .ToList();
+            return FfaRules.PickSpawn(spawnPoints, living, new Vector3(0f, 0.1f, 0f));
         }
 
         void OnGUI()

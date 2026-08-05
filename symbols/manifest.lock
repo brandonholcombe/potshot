@@ -1,14 +1,14 @@
 {
-  "root": "9e80ac0e039f5d20",
-  "generated": "2026-08-05T00:22:17Z",
+  "root": "ef41ac31bf33f22d",
+  "generated": "2026-08-05T00:50:10Z",
   "status": "aligned",
   "symbols": {
     "architecture": {
-      "hash": "6333263d95c43dc1",
+      "hash": "29c803480f05a3c0",
       "means": "architecture: authority=server, engine=unity-6000.1.14f1, expects_max_players=10, netcode=fishnet, tick_hz=30, transport=tugboat-udp",
       "docs": {
         "docs/netcode.md": {
-          "hash": "61942ad4f7550e9a",
+          "hash": "8f5d59535d584f8a",
           "status": "current"
         }
       },

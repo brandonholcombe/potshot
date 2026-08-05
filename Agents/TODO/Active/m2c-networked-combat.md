@@ -1,7 +1,7 @@
 # M2c — Networked combat: weapons, damage, respawn, bots, scores
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — combat E2E green in-process (fire, damage, score, respawn); deployed to tow-c1; live client verified
 
 Shooting becomes server-authoritative on the live kodloki server.
 Offline mode stays intact (network components guard themselves).

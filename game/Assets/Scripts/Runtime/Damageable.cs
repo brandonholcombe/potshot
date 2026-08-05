@@ -14,7 +14,14 @@ namespace Potshot
         /// deactivates — same-tick multi-hits (spread pellets) are guarded.</summary>
         public event Action<Damageable, GameObject> Died;
 
+        /// <summary>New health value — NetworkHealth mirrors it to clients.</summary>
+        public event Action<float> HealthChanged;
+
         void Awake() => Health = maxHealth;
+
+        /// <summary>Client-side display mirror of the server's synced value —
+        /// never gameplay-authoritative.</summary>
+        public void MirrorHealth(float value) => Health = value;
 
         /// <summary>Respawn support: call BEFORE reactivating, or the tank
         /// is briefly an invulnerable ghost (M1f review).</summary>
@@ -24,10 +31,15 @@ namespace Potshot
         {
             if (IsDead) return;
             Health -= amount;
-            if (Health > 0f) return;
+            if (Health > 0f)
+            {
+                HealthChanged?.Invoke(Health);
+                return;
+            }
             Health = 0f;
+            HealthChanged?.Invoke(0f);
             Died?.Invoke(this, source);
-            gameObject.SetActive(false); // respawn arrives in slice d
+            gameObject.SetActive(false); // offline death; networked death despawns via NetFfaState
         }
     }
 }

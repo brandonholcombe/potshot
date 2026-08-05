@@ -18,7 +18,19 @@ namespace Potshot
 
         public int AmmoLeft { get; private set; }
 
+        /// <summary>Networked sessions swap the projectile spawn (server
+        /// spawns NetworkObjects). Offline default = Projectile.Spawn.</summary>
+        public System.Func<GameObject, Vector3, Vector3, WeaponSpec, GameObject, Projectile> SpawnOverride;
+
         float _cooldown;
+
+        /// <summary>Client-side display mirror of server-synced weapon state
+        /// (NetworkWeapon) — never gameplay-authoritative.</summary>
+        public void MirrorState(WeaponSpec spec, int ammo)
+        {
+            current = spec;
+            AmmoLeft = ammo;
+        }
 
         public void Equip(WeaponSpec spec)
         {
@@ -83,9 +95,16 @@ namespace Potshot
                     angle = Random.Range(-current.spreadAngleDeg, current.spreadAngleDeg);
 
                 var dir = Quaternion.AngleAxis(angle, Vector3.up) * baseDir;
-                Projectile.Spawn(projectilePrefab, origin + dir * 0.2f,
-                    dir * current.projectileSpeed, current, gameObject);
+                SpawnProjectile(origin + dir * 0.2f, dir * current.projectileSpeed);
             }
+        }
+
+        void SpawnProjectile(Vector3 pos, Vector3 velocity)
+        {
+            if (SpawnOverride != null)
+                SpawnOverride(projectilePrefab, pos, velocity, current, gameObject);
+            else
+                Projectile.Spawn(projectilePrefab, pos, velocity, current, gameObject);
         }
 
         /// <summary>45° lob solved for landing at aim (y=0) from muzzle
@@ -101,8 +120,7 @@ namespace Potshot
             float comp = v / Mathf.Sqrt(2f);
 
             var dir = planar.sqrMagnitude < 0.01f ? Vector3.forward : planar.normalized;
-            Projectile.Spawn(projectilePrefab, origin,
-                dir * comp + Vector3.up * comp, current, gameObject);
+            SpawnProjectile(origin, dir * comp + Vector3.up * comp);
         }
     }
 }

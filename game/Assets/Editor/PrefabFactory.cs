@@ -24,6 +24,8 @@ namespace Potshot.EditorTools
             CreateWeaponPickupPrefab();
             CreateTankPrefab(spec);
             CreateTankNetPrefab();
+            CreateProjectileNetPrefab();
+            CreateNetFfaStatePrefab();
             AssetDatabase.SaveAssets();
             Debug.Log("[PrefabFactory] CreateAll done");
         }
@@ -86,9 +88,68 @@ namespace Potshot.EditorTools
                 so.ApplyModifiedPropertiesWithoutUndo();
 
                 root.AddComponent<Potshot.Net.NetworkTank>();
+                root.AddComponent<Potshot.Net.NetworkWeapon>();
+                root.AddComponent<Potshot.Net.NetworkHealth>();
 
                 PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/TankNet.prefab");
                 Debug.Log("[PrefabFactory] TankNet.prefab saved");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        /// <summary>Networked shell: server-authoritative NetworkTransform
+        /// visual sync; client-side the Projectile script dies and the
+        /// collider/body go passive (NetworkProjectile shim).</summary>
+        public static void CreateProjectileNetPrefab()
+        {
+            var basePrefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/Projectile.prefab");
+            var root = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
+            try
+            {
+                PrefabUtility.UnpackPrefabInstance(root,
+                    PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                root.name = "ProjectileNet";
+
+                root.AddComponent<FishNet.Object.NetworkObject>();
+                var nt = root.AddComponent<FishNet.Component.Transforming.NetworkTransform>();
+                var so = new SerializedObject(nt);
+                var clientAuth = so.FindProperty("_clientAuthoritative");
+                var compConfig = so.FindProperty("_componentConfiguration");
+                if (clientAuth == null || compConfig == null)
+                {
+                    Debug.LogError("[PrefabFactory] NetworkTransform fields not found — FishNet API drift");
+                    EditorApplication.Exit(1);
+                    return;
+                }
+                clientAuth.boolValue = false; // server-authoritative (M2c review)
+                compConfig.enumValueIndex = System.Array.IndexOf(
+                    compConfig.enumNames, "Rigidbody");
+                so.ApplyModifiedPropertiesWithoutUndo();
+
+                root.AddComponent<Potshot.Net.NetworkProjectile>();
+
+                PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/ProjectileNet.prefab");
+                Debug.Log("[PrefabFactory] ProjectileNet.prefab saved");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        public static void CreateNetFfaStatePrefab()
+        {
+            var root = new GameObject("NetFfaState");
+            try
+            {
+                root.AddComponent<FishNet.Object.NetworkObject>();
+                root.AddComponent<Potshot.Net.NetFfaState>();
+                Directory.CreateDirectory(PrefabDir);
+                PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/NetFfaState.prefab");
+                Debug.Log("[PrefabFactory] NetFfaState.prefab saved");
             }
             finally
             {

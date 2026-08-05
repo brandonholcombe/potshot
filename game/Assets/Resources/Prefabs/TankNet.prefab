@@ -170,6 +170,8 @@ GameObject:
   - component: {fileID: 4650516580678662401}
   - component: {fileID: 5204429601227339000}
   - component: {fileID: 7532750079371082280}
+  - component: {fileID: 2156041914618169120}
+  - component: {fileID: 9121368038149694703}
   m_Layer: 0
   m_Name: TankNet
   m_TagString: Untagged
@@ -397,6 +399,36 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 5204429601227339000}
   _networkObjectCache: {fileID: 0}
   _tickCallbacks: 6
+--- !u!114 &2156041914618169120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7061556358882778707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bfebf1c8305040bb891f05781803e18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5204429601227339000}
+  _networkObjectCache: {fileID: 0}
+--- !u!114 &9121368038149694703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7061556358882778707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ab894f82dff946539f288f4ea111552, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5204429601227339000}
+  _networkObjectCache: {fileID: 0}
 --- !u!1 &7957963759394301017
 GameObject:
   m_ObjectHideFlags: 0

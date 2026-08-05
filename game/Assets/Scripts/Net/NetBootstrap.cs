@@ -79,6 +79,12 @@ namespace Potshot.Net
             foreach (var mode in UnityEngine.Object.FindObjectsByType<FfaGameMode>(
                 FindObjectsSortMode.None))
                 mode.enabled = false;
+            // Pads are server-authoritative in networked play; offline pads
+            // would spawn client-local phantom pickups (M2c review — full
+            // networked pickups are a deferred slice).
+            foreach (var pad in UnityEngine.Object.FindObjectsByType<PickupPad>(
+                FindObjectsSortMode.None))
+                pad.enabled = false;
         }
 
         /// <summary>Pure and unit-tested: what should this process do?</summary>
