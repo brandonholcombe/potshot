@@ -40,6 +40,84 @@ namespace Potshot.Net
 
         public static string BuildJson(Payload p) => JsonUtility.ToJson(p);
 
+        public struct FetchResult
+        {
+            public bool ok;
+            public string body;
+            public string error;
+        }
+
+        /// <summary>
+        /// Status fetch with DNS fallback: UnityWebRequest resolves via the
+        /// OS (macOS negative-cache poisoning made 'unreachable' while the
+        /// game connected fine — Tugboat resolves via Mono). On a resolve
+        /// failure we resolve through Mono's Dns ourselves and retry by IP.
+        /// </summary>
+        public static System.Collections.IEnumerator Fetch(
+            string host, int port, Action<FetchResult> done)
+        {
+            string firstError = null;
+            foreach (string target in FetchTargets(host))
+            {
+                using var req = UnityEngine.Networking.UnityWebRequest.Get(
+                    $"http://{target}:{port}/status");
+                req.timeout = 4;
+                yield return req.SendWebRequest();
+                Debug.Log($"[Status] fetch {target}:{port} → {req.result} ({req.error})");
+                if (req.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+                {
+                    done(new FetchResult { ok = true, body = req.downloadHandler.text });
+                    yield break;
+                }
+                firstError ??= req.error;
+            }
+            done(new FetchResult { ok = false, error = firstError ?? "no targets" });
+        }
+
+        static System.Collections.Generic.IEnumerable<string> FetchTargets(string host)
+        {
+            yield return host;
+            string ip = null;
+            try
+            {
+                var addresses = System.Net.Dns.GetHostAddresses(host);
+                Debug.Log($"[Status] Mono DNS for {host}: " +
+                    (addresses.Length > 0 ? addresses[0].ToString() : "EMPTY"));
+                if (addresses.Length > 0) ip = addresses[0].ToString();
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"[Status] Mono DNS failed for {host}: {e.Message}");
+            }
+            if (ip != null && ip != host) yield return ip;
+            // Same poisoned-DNS insurance the game connection has.
+            if (host == NetBootstrap.DefaultHost
+                && ip != NetBootstrap.DefaultHostFallbackIp)
+                yield return NetBootstrap.DefaultHostFallbackIp;
+        }
+
+        /// <summary>Headless repro of the exact client fetch path:
+        /// `-potshotStatusProbe <host>` logs the result and quits.</summary>
+        public static void RunProbe(string host)
+        {
+            var go = new GameObject("StatusProbe");
+            DontDestroyOnLoad(go);
+            go.AddComponent<StatusProbe>().host = host;
+        }
+
+        class StatusProbe : MonoBehaviour
+        {
+            public string host;
+
+            System.Collections.IEnumerator Start()
+            {
+                yield return Fetch(host, 8080, r =>
+                    Debug.Log($"[StatusProbe] host={host} ok={r.ok} " +
+                              $"error={r.error} body={r.body}"));
+                Application.Quit();
+            }
+        }
+
         void Awake()
         {
             _nm = GetComponent<NetworkManager>();

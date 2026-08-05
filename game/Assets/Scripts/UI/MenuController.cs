@@ -114,23 +114,22 @@ namespace Potshot.UI
 
         System.Collections.IEnumerator FetchStatus()
         {
-            using var req = UnityEngine.Networking.UnityWebRequest.Get(
-                $"http://{NetBootstrap.DefaultHost}:8080/status");
-            req.timeout = 4;
-            yield return req.SendWebRequest();
+            Potshot.Net.PotshotStatus.FetchResult result = default;
+            yield return Potshot.Net.PotshotStatus.Fetch(
+                NetBootstrap.DefaultHost, 8080, r => result = r);
             if (!_statusPanel.activeSelf) yield break; // user backed out
 
-            if (req.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
+            if (!result.ok)
             {
-                _statusText.text = "Server unreachable — you can still try to join.";
+                _statusText.text =
+                    $"Server unreachable — you can still try to join.\n({result.error})";
                 yield break;
             }
 
             Potshot.Net.PotshotStatus.Payload p;
             try
             {
-                p = JsonUtility.FromJson<Potshot.Net.PotshotStatus.Payload>(
-                    req.downloadHandler.text);
+                p = JsonUtility.FromJson<Potshot.Net.PotshotStatus.Payload>(result.body);
             }
             catch
             {

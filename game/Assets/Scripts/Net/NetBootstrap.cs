@@ -16,12 +16,20 @@ namespace Potshot.Net
     public static class NetBootstrap
     {
         public const string DefaultHost = "potshot.kodloki.io";
+        /// <summary>Automatic retry target when DefaultHost fails to
+        /// resolve (macOS negative-DNS-cache poisoning hit Brandon's Mac on
+        /// EVERY resolver path). Refresh when the game node moves; the M4
+        /// DNS reconciler makes this obsolete.</summary>
+        public const string DefaultHostFallbackIp = "172.238.48.241";
         public const string MenuScene = "MainMenu";
         public const string DefaultGameScene = "DevArena";
 
         public enum StartupAction { Menu, Offline, Server, Client }
 
         static bool _cleanupSubscribed;
+        static string _lastHost;
+        static bool _connectedThisAttempt;
+        static bool _retriedFallback;
 
         public static NetworkManager EnsureHub()
         {
@@ -68,9 +76,27 @@ namespace Potshot.Net
                 nm.ClientManager.OnClientConnectionState += args =>
                 {
                     if (args.ConnectionState == LocalConnectionState.Started)
+                    {
+                        _connectedThisAttempt = true;
                         CleanOfflineActors();
+                    }
+                    else if (args.ConnectionState == LocalConnectionState.Stopped
+                        && !_connectedThisAttempt
+                        && _lastHost == DefaultHost
+                        && !_retriedFallback)
+                    {
+                        // Hostname never connected (DNS poisoning class of
+                        // failure) — one silent retry against the known IP.
+                        _retriedFallback = true;
+                        _lastHost = DefaultHostFallbackIp;
+                        Debug.Log($"[Net] {DefaultHost} failed — retrying {DefaultHostFallbackIp}");
+                        nm.ClientManager.StartConnection(DefaultHostFallbackIp);
+                    }
                 };
             }
+            _lastHost = host;
+            _connectedThisAttempt = false;
+            if (host != DefaultHostFallbackIp) _retriedFallback = false;
             nm.ClientManager.StartConnection(host);
         }
 
@@ -131,8 +157,15 @@ namespace Potshot.Net
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void InitFromCommandLine()
         {
-            var (action, host) = ResolveStartup(
-                Environment.GetCommandLineArgs(), Application.isEditor);
+            var cliArgs = Environment.GetCommandLineArgs();
+            for (int i = 0; i < cliArgs.Length - 1; i++)
+                if (cliArgs[i] == "-potshotStatusProbe")
+                {
+                    PotshotStatus.RunProbe(cliArgs[i + 1]);
+                    return;
+                }
+
+            var (action, host) = ResolveStartup(cliArgs, Application.isEditor);
             switch (action)
             {
                 case StartupAction.Server:
