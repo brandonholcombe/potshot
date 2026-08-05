@@ -7,6 +7,6 @@ namespace Potshot
     /// </summary>
     public static class GameVersion
     {
-        public const string Version = "0.1.0+dev";
+        public const string Version = "0.2.0+dev"; // bumped: owned-shell protocol (fire-feel)
     }
 }

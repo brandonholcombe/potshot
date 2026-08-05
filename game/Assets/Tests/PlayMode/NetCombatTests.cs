@@ -33,6 +33,7 @@ namespace Potshot.Tests
             ground.name = "NetTestGround";
             ground.transform.localScale = new Vector3(10f, 1f, 10f);
 
+            LobbyState.DisableSceneManagement = true; // pre-lobby combat flow
             var prefab = Resources.Load<GameObject>("Prefabs/NetworkHub");
             _nm = Object.Instantiate(prefab).GetComponent<NetworkManager>();
             _nm.GetComponent<Tugboat>().SetPort(_nextPort++);
@@ -48,6 +49,8 @@ namespace Potshot.Tests
                 Object.Destroy(p.gameObject);
             foreach (var f in Object.FindObjectsByType<NetFfaState>(FindObjectsSortMode.None))
                 Object.Destroy(f.gameObject);
+            foreach (var l in Object.FindObjectsByType<LobbyState>(FindObjectsSortMode.None))
+                Object.Destroy(l.gameObject);
             if (_nm != null)
             {
                 _nm.ClientManager.StopConnection();
@@ -60,6 +63,7 @@ namespace Potshot.Tests
             yield return null;
             Physics.simulationMode = _savedSimMode;
             Time.fixedDeltaTime = _savedFixedDelta;
+            LobbyState.DisableSceneManagement = false;
         }
 
         IEnumerator WaitFor(System.Func<bool> done, float seconds)

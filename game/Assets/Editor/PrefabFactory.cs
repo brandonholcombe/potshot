@@ -26,6 +26,7 @@ namespace Potshot.EditorTools
             CreateTankNetPrefab();
             CreateProjectileNetPrefab();
             CreateNetFfaStatePrefab();
+            CreateLobbyStatePrefab();
             AssetDatabase.SaveAssets();
             Debug.Log("[PrefabFactory] CreateAll done");
         }
@@ -157,6 +158,23 @@ namespace Potshot.EditorTools
 
                 PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/ProjectileNet.prefab");
                 Debug.Log("[PrefabFactory] ProjectileNet.prefab saved");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        public static void CreateLobbyStatePrefab()
+        {
+            var root = new GameObject("LobbyState");
+            try
+            {
+                root.AddComponent<FishNet.Object.NetworkObject>();
+                root.AddComponent<Potshot.Net.LobbyState>();
+                Directory.CreateDirectory(PrefabDir);
+                PrefabUtility.SaveAsPrefabAsset(root, $"{PrefabDir}/LobbyState.prefab");
+                Debug.Log("[PrefabFactory] LobbyState.prefab saved");
             }
             finally
             {

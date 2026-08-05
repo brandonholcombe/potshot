@@ -17,11 +17,24 @@ namespace Potshot.Net
         public override void OnStartClient()
         {
             if (IsServerStarted) return; // host: server sim owns the object
-            Destroy(GetComponent<Projectile>());
-            var col = GetComponent<Collider>();
+            ApplyClientVisualPolicy(gameObject, IsOwner);
+        }
+
+        /// <summary>Client copy: strip the sim; the FIRER also hides the
+        /// renderer (they see their instant local tracer instead —
+        /// fire-feel). Static + component-free for unit tests.</summary>
+        public static void ApplyClientVisualPolicy(GameObject go, bool isOwner)
+        {
+            Object.Destroy(go.GetComponent<Projectile>());
+            var col = go.GetComponent<Collider>();
             if (col != null) col.enabled = false;
-            var body = GetComponent<Rigidbody>();
+            var body = go.GetComponent<Rigidbody>();
             if (body != null) body.isKinematic = true; // NetworkTransform drives
+            if (isOwner)
+            {
+                var renderer = go.GetComponent<Renderer>();
+                if (renderer != null) renderer.enabled = false;
+            }
         }
     }
 }

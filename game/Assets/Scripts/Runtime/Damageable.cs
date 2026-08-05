@@ -7,6 +7,9 @@ namespace Potshot
     {
         public float maxHealth = 100f;
 
+        /// <summary>Warmup-lobby tanks shrug off everything (server-set).</summary>
+        public bool invulnerable;
+
         public float Health { get; private set; }
         public bool IsDead => Health <= 0f;
 
@@ -29,7 +32,7 @@ namespace Potshot
 
         public void TakeDamage(float amount, GameObject source)
         {
-            if (IsDead) return;
+            if (IsDead || invulnerable) return;
             Health -= amount;
             if (Health > 0f)
             {

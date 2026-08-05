@@ -180,6 +180,43 @@ namespace Potshot.EditorTools
             Debug.Log("[SceneBuilder] DevArena.unity saved");
         }
 
+        /// <summary>Warmup pen: small arena, no pads/game mode — the lobby
+        /// spawns invulnerable tanks here between matches.</summary>
+        public static void BuildLobbyScene()
+        {
+            var scene = EditorSceneManager.NewScene(
+                NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            ground.name = "Ground";
+            ground.transform.localScale = new Vector3(2.2f, 1f, 2.2f); // 22x22
+            ground.GetComponent<Renderer>().sharedMaterial =
+                Mat("LobbyGround", new Color(0.3f, 0.36f, 0.42f));
+
+            var wallMat = Mat("ArenaWall", new Color(0.3f, 0.3f, 0.32f));
+            Wall("WallN", new Vector3(0f, 1f, 11f), new Vector3(23f, 2f, 1f), wallMat);
+            Wall("WallS", new Vector3(0f, 1f, -11f), new Vector3(23f, 2f, 1f), wallMat);
+            Wall("WallE", new Vector3(11f, 1f, 0f), new Vector3(1f, 2f, 23f), wallMat);
+            Wall("WallW", new Vector3(-11f, 1f, 0f), new Vector3(1f, 2f, 23f), wallMat);
+
+            var sun = new GameObject("Sun").AddComponent<Light>();
+            sun.type = LightType.Directional;
+            sun.transform.rotation = Quaternion.Euler(55f, 40f, 0f);
+
+            var cam = new GameObject("FollowCamera").AddComponent<Camera>();
+            cam.gameObject.tag = "MainCamera";
+            cam.transform.position = new Vector3(0f, 22f, -8f);
+            cam.transform.rotation = Quaternion.Euler(70f, 0f, 0f);
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.1f, 0.1f, 0.12f);
+            cam.gameObject.AddComponent<CameraFollow>();
+
+            Directory.CreateDirectory(ScenesDir);
+            EditorSceneManager.SaveScene(scene, $"{ScenesDir}/Lobby.unity");
+            AssetDatabase.SaveAssets();
+            Debug.Log("[SceneBuilder] Lobby.unity saved");
+        }
+
         static void Wall(string name, Vector3 pos, Vector3 scale, Material mat)
         {
             var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);

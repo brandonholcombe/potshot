@@ -43,14 +43,20 @@ namespace Potshot.UI
             _statusPanel = transform.Find("StatusPanel").gameObject;
             _statusText = Find<Text>("StatusPanel/StatusText");
             Wire("PlayOnlineButton", ShowPreJoin);
-            Wire("StatusPanel/ConfirmJoinButton", () => Launch(
-                () => NetBootstrap.StartClient(NetBootstrap.DefaultHost),
-                NetBootstrap.DefaultGameScene));
+            // Online joins connect FROM the menu — the server's global
+            // scene load replaces it (lobby flow).
+            Wire("StatusPanel/ConfirmJoinButton", () =>
+            {
+                SaveName();
+                NetBootstrap.StartClient(NetBootstrap.DefaultHost);
+            });
             Wire("StatusPanel/StatusBackButton", () => _statusPanel.SetActive(false));
-            Wire("HostButton", () => Launch(NetBootstrap.StartHost, SelectedMap()));
-            Wire("JoinRow/JoinButton", () => Launch(
-                () => NetBootstrap.StartClient(_addressField.text.Trim()),
-                NetBootstrap.DefaultGameScene));
+            Wire("HostButton", () => { SaveName(); NetBootstrap.StartHost(); });
+            Wire("JoinRow/JoinButton", () =>
+            {
+                SaveName();
+                NetBootstrap.StartClient(_addressField.text.Trim());
+            });
             Wire("OfflineRow/OfflineButton", () => Launch(null, SelectedMap()));
             Wire("OfflineRow/MapButton", CycleMap);
             Wire("SettingsButton", () => _settingsPanel.SetActive(true));

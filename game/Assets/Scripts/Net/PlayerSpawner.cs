@@ -6,18 +6,22 @@ using UnityEngine;
 namespace Potshot.Net
 {
     /// <summary>
-    /// Server-side spawning: NetFfaState singleton + a tank per client on
-    /// scene load + bot tanks to fill the arena. NetFfaState calls back in
-    /// for respawns. (FishNet PlayerSpawner pattern, M2b/M2c reviews.)
+    /// Spawn mechanics (the LOBBY decides when/what): warmup tanks are
+    /// invulnerable pen-dwellers; match tanks register with NetFfaState;
+    /// bots and the match-state singleton spawn at match start. Spawned
+    /// singletons get SetIsGlobal so scene replaces don't kill them.
     /// </summary>
     public class PlayerSpawner : MonoBehaviour
     {
         public NetworkObject tankNetPrefab;
+
+        /// <summary>Compat/test default (LobbyState.DisableSceneManagement
+        /// flow); real matches use the leader's synced setting.</summary>
         public int botCount = 3;
 
         NetworkManager _nm;
-        NetFfaState _ffa;
-        bool _botsSpawned;
+        LobbyState _lobby;
+        int _nextBotKey = -1;
 
         void Awake()
         {
@@ -37,51 +41,106 @@ namespace Potshot.Net
         {
             if (args.ConnectionState == FishNet.Transporting.LocalConnectionState.Stopped)
             {
-                // Re-hosting after Leave Match must respawn bots (UI review).
-                _botsSpawned = false;
-                _ffa = null;
+                _lobby = null;
+                _nextBotKey = -1;
                 return;
             }
             if (args.ConnectionState != FishNet.Transporting.LocalConnectionState.Started)
                 return;
-            EnsureFfaState();
-            if (_botsSpawned) return;
-            _botsSpawned = true;
-            for (int i = 0; i < botCount; i++)
-                SpawnTank(null, -(i + 1), isBot: true);
+            EnsureLobby();
         }
 
-        void EnsureFfaState()
+        void EnsureLobby()
         {
-            if (_ffa != null) return;
-            var prefab = Resources.Load<GameObject>("Prefabs/NetFfaState");
+            if (_lobby != null) return;
+            var prefab = Resources.Load<GameObject>("Prefabs/LobbyState");
             var go = Instantiate(prefab);
-            _ffa = go.GetComponent<NetFfaState>();
+            var nob = go.GetComponent<NetworkObject>();
+            nob.SetIsGlobal(true); // survive scene replaces
+            _lobby = go.GetComponent<LobbyState>();
             _nm.ServerManager.Spawn(go);
         }
 
         void OnClientLoadedStartScenes(NetworkConnection conn, bool asServer)
         {
             if (!asServer || tankNetPrefab == null) return;
-            EnsureFfaState();
-            SpawnTank(conn, conn.ClientId, isBot: false);
+            EnsureLobby();
+            _lobby.OnClientReady(conn);
         }
 
-        /// <summary>Fresh tank for a human connection or a bot (scoreKey
-        /// negative). Also the respawn path (NetFfaState).</summary>
-        public void SpawnTank(NetworkConnection conn, int scoreKey, bool isBot)
+        // ── mechanics the lobby drives ──────────────────────────────────
+
+        public void SpawnWarmupTank(NetworkConnection conn)
         {
-            EnsureFfaState();
-            var pos = _ffa != null ? _ffa.PickSpawn() : new Vector3(0f, 0.5f, 0f);
-            var nob = Instantiate(tankNetPrefab, pos, Quaternion.identity);
-            if (isBot)
+            var nob = SpawnTankObject(conn, RingSpawn(7f));
+            nob.GetComponent<Damageable>().invulnerable = true;
+        }
+
+        public void SpawnMatchTank(NetworkConnection conn, NetFfaState match)
+        {
+            var pos = match != null ? match.PickSpawn() : RingSpawn(12f);
+            var nob = SpawnTankObject(conn, pos);
+            if (match != null) match.Track(nob, conn.ClientId, isBot: false);
+        }
+
+        public NetFfaState SpawnMatchState()
+        {
+            var prefab = Resources.Load<GameObject>("Prefabs/NetFfaState");
+            var go = Instantiate(prefab);
+            var nob = go.GetComponent<NetworkObject>();
+            nob.SetIsGlobal(true);
+            _nm.ServerManager.Spawn(go);
+            return go.GetComponent<NetFfaState>();
+        }
+
+        public void SpawnBots(int count, NetFfaState match)
+        {
+            for (int i = 0; i < count; i++)
             {
+                int key = _nextBotKey--;
+                var nob = Instantiate(tankNetPrefab,
+                    match != null ? match.PickSpawn() : RingSpawn(12f),
+                    Quaternion.identity);
                 var brain = nob.gameObject.AddComponent<BotBrain>();
                 brain.spec = Resources.Load<BotSpec>("Specs/BotSpec");
                 nob.GetComponent<TankController>().InputSource = brain;
+                _nm.ServerManager.Spawn(nob);
+                if (match != null) match.Track(nob, key, isBot: true);
             }
-            _nm.ServerManager.Spawn(nob, isBot ? null : conn);
-            if (_ffa != null) _ffa.Track(nob, scoreKey, isBot);
+        }
+
+        /// <summary>Bot respawns mid-match (NetFfaState) reuse this.</summary>
+        public void SpawnTank(NetworkConnection conn, int scoreKey, bool isBot)
+        {
+            var match = FindFirstObjectByType<NetFfaState>();
+            if (isBot)
+            {
+                var nob = Instantiate(tankNetPrefab,
+                    match != null ? match.PickSpawn() : RingSpawn(12f),
+                    Quaternion.identity);
+                var brain = nob.gameObject.AddComponent<BotBrain>();
+                brain.spec = Resources.Load<BotSpec>("Specs/BotSpec");
+                nob.GetComponent<TankController>().InputSource = brain;
+                _nm.ServerManager.Spawn(nob);
+                if (match != null) match.Track(nob, scoreKey, isBot: true);
+            }
+            else if (conn != null)
+            {
+                SpawnMatchTank(conn, match);
+            }
+        }
+
+        NetworkObject SpawnTankObject(NetworkConnection conn, Vector3 pos)
+        {
+            var nob = Instantiate(tankNetPrefab, pos, Quaternion.identity);
+            _nm.ServerManager.Spawn(nob, conn);
+            return nob;
+        }
+
+        Vector3 RingSpawn(float radius)
+        {
+            float angle = ((uint)Time.frameCount * 2654435761u % 360u) * Mathf.Deg2Rad;
+            return new Vector3(Mathf.Cos(angle) * radius, 0.5f, Mathf.Sin(angle) * radius);
         }
     }
 }

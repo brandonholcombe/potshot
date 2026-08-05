@@ -99,7 +99,12 @@ namespace Potshot.Net
             if (source == null) return default;
 
             var sample = source.Sample();
-            if (_controller.InputFrozen)
+            // PostMatch freeze is read from the SYNCED lobby phase — the
+            // owner builds inputs, so a server-side flag can't stop them.
+            var lobby = FindFirstObjectByType<LobbyState>();
+            bool frozen = _controller.InputFrozen
+                || (lobby != null && lobby.CurrentPhase == LobbyState.Phase.PostMatch);
+            if (frozen)
             {
                 sample.Move = Vector2.zero;
                 sample.Fire = false;
@@ -129,12 +134,21 @@ namespace Potshot.Net
             _controller.SetNetworkSample(in sample);
             TankMotor.Step(_rb, in sample, _controller.spec,
                 ref _controller.Boost, (float)TimeManager.TickDelta);
-            // Server-only firing (M2c): clients never spawn projectiles —
-            // shells arrive as server-spawned synced objects. Fire only on
-            // fresh created ticks, never replays (flags enum in 4.7.2).
-            if (IsServerStarted && _weapon != null
-                && state.ContainsCreated() && !state.IsReplayed())
-                _weapon.ServerTick(in sample, (float)TimeManager.TickDelta);
+            // Fire only on fresh created ticks, never replays (owner fresh
+            // = Ticked|Created; replays always carry Replayed — 4.7.2
+            // source; IsReplayed() is obsolete, use ContainsReplayed()).
+            bool freshTick = state.ContainsCreated() && !state.ContainsReplayed();
+            if (freshTick && _weapon != null)
+            {
+                // Server: the real, damage-dealing shells (M2c).
+                if (IsServerStarted)
+                    _weapon.ServerTick(in sample, (float)TimeManager.TickDelta);
+                // Owner (pure client): instant local tracer from the
+                // on-screen barrel — the authoritative shell is hidden for
+                // us (fire-feel).
+                else if (IsOwner)
+                    _weapon.OwnerVisualTick(in sample, (float)TimeManager.TickDelta);
+            }
         }
 
         public override void CreateReconcile()

@@ -1,3 +1,4 @@
+using System.Linq;
 using Potshot;
 using UnityEditor;
 using UnityEditor.Build;
@@ -27,11 +28,34 @@ namespace Potshot.EditorTools
             // Unity 6 default (NotAllowed) kills every insecure request.
             // TLS via ingress is the M4 upgrade path.
             PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
+            SyncEditorBuildScenes();
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[ProjectConfigurator] applied: company={PlayerSettings.companyName} " +
                       $"product={PlayerSettings.productName} version={PlayerSettings.bundleVersion} " +
                       $"fixedTimestep={Time.fixedDeltaTime}");
+        }
+
+        /// <summary>FishNet's scene processor NREs with an empty editor
+        /// build-scenes list (lobby review) — keep it synced to the client
+        /// scene set so lifecycle tests can load scenes by name.</summary>
+        public static void SyncEditorBuildScenes()
+        {
+            var paths = new System.Collections.Generic.List<string>
+            {
+                "Assets/Scenes/MainMenu.unity",
+                "Assets/Scenes/Lobby.unity",
+                "Assets/Scenes/DevArena.unity",
+            };
+            if (System.IO.Directory.Exists("Assets/Scenes/Maps"))
+                paths.AddRange(System.IO.Directory
+                    .GetFiles("Assets/Scenes/Maps", "*.unity")
+                    .OrderBy(p => p));
+            EditorBuildSettings.scenes = paths
+                .Where(System.IO.File.Exists)
+                .Select(p => new EditorBuildSettingsScene(p, true))
+                .ToArray();
+            Debug.Log($"[ProjectConfigurator] {EditorBuildSettings.scenes.Length} editor build scenes synced");
         }
 
         static void SetLayerName(int index, string name)

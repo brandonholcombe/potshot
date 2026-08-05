@@ -4,7 +4,8 @@
     "references": [
         "Potshot.Core",
         "Potshot.Net",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "FishNet.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -29,8 +29,70 @@ namespace Potshot.EditorTools
         {
             BuildMainMenuScene();
             CreatePauseMenuPrefab();
+            CreateLobbyOverlayPrefab();
             AssetDatabase.SaveAssets();
             Debug.Log("[UIFactory] CreateAll done");
+        }
+
+        public static void CreateLobbyOverlayPrefab()
+        {
+            var rootGo = new GameObject("LobbyOverlay");
+            try
+            {
+                var canvas = rootGo.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 50; // under the pause menu (100)
+                var scaler = rootGo.AddComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920f, 1080f);
+                rootGo.AddComponent<GraphicRaycaster>();
+
+                var roster = MakePanel(rootGo.transform, "RosterPanel",
+                    new Vector2(-720f, 200f), new Vector2(380f, 420f));
+                MakeText(roster, "RosterTitle", "LOBBY", 34,
+                    new Vector2(0f, 175f), new Vector2(320f, 46f), FontStyle.Bold);
+                var rosterText = MakeText(roster, "RosterText", "", 26,
+                    new Vector2(0f, -20f), new Vector2(340f, 330f));
+                rosterText.alignment = TextAnchor.UpperLeft;
+
+                var leader = MakePanel(rootGo.transform, "LeaderPanel",
+                    new Vector2(-720f, -160f), new Vector2(380f, 260f));
+                MakeButton(leader, "MapButton", "Map: DevArena",
+                    new Vector2(0f, 90f), new Vector2(330f, 52f), 22);
+                MakeButton(leader, "BotsMinus", "-", new Vector2(-130f, 30f), new Vector2(52f, 46f));
+                MakeText(leader, "BotsLabel", "Bots: 3", 24, new Vector2(0f, 30f), new Vector2(180f, 40f));
+                MakeButton(leader, "BotsPlus", "+", new Vector2(130f, 30f), new Vector2(52f, 46f));
+                MakeButton(leader, "TargetMinus", "-", new Vector2(-130f, -25f), new Vector2(52f, 46f));
+                MakeText(leader, "TargetLabel", "First to 10", 24, new Vector2(0f, -25f), new Vector2(190f, 40f));
+                MakeButton(leader, "TargetPlus", "+", new Vector2(130f, -25f), new Vector2(52f, 46f));
+                var start = MakeButton(leader, "StartButton", "START",
+                    new Vector2(0f, -92f), new Vector2(330f, 58f));
+                start.targetGraphic.color = new Color(0.25f, 0.5f, 0.28f, 1f);
+
+                var waiting = MakeText(rootGo.transform, "WaitingLabel",
+                    "Waiting for the leader to start…", 28,
+                    new Vector2(-720f, -120f), new Vector2(400f, 60f));
+                waiting.color = new Color(0.8f, 0.82f, 0.86f, 0.9f);
+
+                var countdown = MakeText(rootGo.transform, "CountdownLabel", "3", 200,
+                    new Vector2(0f, 120f), new Vector2(500f, 240f), FontStyle.Bold);
+                countdown.color = new Color(0.95f, 0.85f, 0.3f, 0.95f);
+
+                var post = MakePanel(rootGo.transform, "PostMatchPanel",
+                    Vector2.zero, new Vector2(560f, 520f));
+                post.GetComponent<Image>().color = new Color(0.08f, 0.09f, 0.11f, 0.97f);
+                var standings = MakeText(post, "StandingsText", "", 30,
+                    new Vector2(0f, 0f), new Vector2(500f, 470f));
+                standings.alignment = TextAnchor.UpperCenter;
+
+                Directory.CreateDirectory("Assets/Resources/UI");
+                PrefabUtility.SaveAsPrefabAsset(rootGo, "Assets/Resources/UI/LobbyOverlay.prefab");
+                Debug.Log("[UIFactory] LobbyOverlay.prefab saved");
+            }
+            finally
+            {
+                Object.DestroyImmediate(rootGo);
+            }
         }
 
         public static void BuildMainMenuScene()

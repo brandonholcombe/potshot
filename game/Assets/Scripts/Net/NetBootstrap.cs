@@ -175,7 +175,9 @@ namespace Potshot.Net
                     RunInGameScene(StartServer);
                     break;
                 case StartupAction.Client:
-                    RunInGameScene(() => StartClient(host));
+                    // No scene preload: the server's global scene load
+                    // replaces whatever we're in (lobby flow).
+                    StartClient(host);
                     break;
                 case StartupAction.Offline:
                     RunInGameScene(null);

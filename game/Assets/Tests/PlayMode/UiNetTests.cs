@@ -30,6 +30,7 @@ namespace Potshot.Tests
             ground.name = "UiNetGround";
             ground.transform.localScale = new Vector3(10f, 1f, 10f);
 
+            LobbyState.DisableSceneManagement = true; // pre-lobby combat flow
             var prefab = Resources.Load<GameObject>("Prefabs/NetworkHub");
             _nm = Object.Instantiate(prefab).GetComponent<NetworkManager>();
             _nm.GetComponent<Tugboat>().SetPort(_nextPort++);
@@ -45,6 +46,8 @@ namespace Potshot.Tests
                 Object.Destroy(t.gameObject);
             foreach (var f in Object.FindObjectsByType<NetFfaState>(FindObjectsSortMode.None))
                 Object.Destroy(f.gameObject);
+            foreach (var l in Object.FindObjectsByType<LobbyState>(FindObjectsSortMode.None))
+                Object.Destroy(l.gameObject);
             foreach (var p in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
                 Object.Destroy(p.gameObject);
             if (_nm != null)
@@ -59,6 +62,7 @@ namespace Potshot.Tests
             yield return null;
             Physics.simulationMode = _savedSimMode;
             Time.fixedDeltaTime = _savedFixedDelta;
+            LobbyState.DisableSceneManagement = false;
         }
 
         IEnumerator WaitFor(System.Func<bool> done, float seconds)

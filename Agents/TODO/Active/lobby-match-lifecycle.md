@@ -1,7 +1,7 @@
 # Lobby — server-hosted lobby + match lifecycle
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — full lifecycle test green (real scene swaps); LIVE: server sits in Lobby awaiting players
 
 Brandon (2026-08-04, AskUserQuestion): SINGLE lobby per server; WARMUP
 ARENA while waiting (drive/shoot, no scoring); leader controls map +

@@ -34,6 +34,7 @@ namespace Potshot.Tests
             ground.name = "NetTestGround";
             ground.transform.localScale = new Vector3(10f, 1f, 10f);
 
+            LobbyState.DisableSceneManagement = true; // pre-lobby combat flow
             var prefab = Resources.Load<GameObject>("Prefabs/NetworkHub");
             _nm = Object.Instantiate(prefab).GetComponent<NetworkManager>();
             _nm.GetComponent<Tugboat>().SetPort(_nextPort++);
@@ -63,6 +64,7 @@ namespace Potshot.Tests
 
             Physics.simulationMode = _savedSimMode;
             Time.fixedDeltaTime = _savedFixedDelta;
+            LobbyState.DisableSceneManagement = false;
         }
 
         [UnityTest]

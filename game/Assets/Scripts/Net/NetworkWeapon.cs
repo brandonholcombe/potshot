@@ -19,6 +19,8 @@ namespace Potshot.Net
 
         WeaponController _weapon;
         GameObject _projectileNetPrefab;
+        float _visualCooldown;
+        readonly System.Collections.Generic.Dictionary<string, WeaponSpec> _visualSpecs = new();
 
         void Awake()
         {
@@ -53,6 +55,40 @@ namespace Potshot.Net
             PushState();
         }
 
+        /// <summary>
+        /// OWNER-only instant fire feedback (fire-feel review): a local
+        /// visual tracer from the on-screen (smoothed) muzzle, damage-free.
+        /// Runs its own cooldown — NEVER WeaponController.Tick, which would
+        /// spawn a real offline projectile and corrupt the mirrored ammo.
+        /// Network-state-free by design (unit-testable).
+        /// </summary>
+        public void OwnerVisualTick(in TankInputSample sample, float dt)
+        {
+            _visualCooldown -= dt;
+            var spec = _weapon.current;
+            if (!sample.Fire || _visualCooldown > 0f || spec == null) return;
+            if (spec.ammo > 0 && _weapon.AmmoLeft <= 0) return; // mirrored dry-fire
+            _visualCooldown = spec.fireCooldown;
+
+            var prev = _weapon.SpawnOverride;
+            _weapon.SpawnOverride = SpawnVisualTracer;
+            _weapon.Fire(sample.AimWorldPos);
+            _weapon.SpawnOverride = prev;
+        }
+
+        Projectile SpawnVisualTracer(GameObject prefab, Vector3 pos,
+            Vector3 velocity, WeaponSpec spec, GameObject firer)
+        {
+            if (!_visualSpecs.TryGetValue(spec.id, out var visual) || visual == null)
+            {
+                visual = Instantiate(spec);
+                visual.damage = 0f;
+                visual.aoeRadius = 0f;
+                _visualSpecs[spec.id] = visual;
+            }
+            return Projectile.Spawn(prefab, pos, velocity, visual, firer);
+        }
+
         void PushState()
         {
             string id = _weapon.current != null ? _weapon.current.id : "";
@@ -68,7 +104,13 @@ namespace Potshot.Net
                 Quaternion.LookRotation(velocity.normalized));
             var projectile = go.GetComponent<Projectile>();
             Projectile.Configure(projectile, velocity, spec, firer);
-            ServerManager.Spawn(go);
+            // Owned by the firer so THEIR client can hide it (they see the
+            // local tracer instead). clientAuthoritative=false keeps the
+            // transform server-authoritative; bots stay ownerless.
+            var firerNob = firer.GetComponent<FishNet.Object.NetworkObject>();
+            var ownerConn = firerNob != null && firerNob.Owner != null
+                && firerNob.Owner.IsValid ? firerNob.Owner : null;
+            ServerManager.Spawn(go, ownerConn);
             return projectile;
         }
 
@@ -80,7 +122,11 @@ namespace Potshot.Net
             var spec = string.IsNullOrEmpty(_weaponId.Value)
                 ? null
                 : Resources.Load<WeaponSpec>($"Specs/Weapons/{_weaponId.Value}");
-            if (spec != null) _weapon.MirrorState(spec, _ammo.Value);
+            if (spec == null) return;
+            _weapon.MirrorState(spec, _ammo.Value);
+            // Weapon swap must not carry a longer cooldown (m1e's clamp
+            // rule, applied to the visual mirror).
+            _visualCooldown = Mathf.Min(_visualCooldown, spec.fireCooldown);
         }
     }
 }

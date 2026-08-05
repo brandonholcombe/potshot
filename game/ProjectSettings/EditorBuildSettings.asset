@@ -4,6 +4,24 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 4ec8b7f50b8fb4480b5f8d2bed73a4a1
+  - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: 3ebcda04318454ed789bfd90eac93048
+  - enabled: 1
+    path: Assets/Scenes/DevArena.unity
+    guid: 2be689f2e92394ec1b516c12ec00ecda
+  - enabled: 1
+    path: Assets/Scenes/Maps/CliffsAndTunnels.unity
+    guid: 66fdab2cf7f7d465a9212de1c8870297
+  - enabled: 1
+    path: Assets/Scenes/Maps/ClifsideBattle.unity
+    guid: 716cf6935b62d4f379c1ad3f205fcfb9
+  - enabled: 1
+    path: Assets/Scenes/Maps/FortsBridgesAndRivers.unity
+    guid: fba8dc9c4f2ef429ba7fc1ff378e7127
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

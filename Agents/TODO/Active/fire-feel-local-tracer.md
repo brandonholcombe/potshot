@@ -1,7 +1,7 @@
 # Net — Instant fire feedback (local tracer + owned-shell hiding)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — tracer + owned-shell hiding shipped (v0.2.0 protocol); deployed d6f62b1
 
 Brandon (2026-08-04): "terrible delay from shooting… the bullet does not
 even come out of the barrel, but where the barrel was 1/2 second ago."

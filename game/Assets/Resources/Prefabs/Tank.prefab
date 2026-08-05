@@ -371,6 +371,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  invulnerable: 0
 --- !u!114 &4249520358039362253
 MonoBehaviour:
   m_ObjectHideFlags: 0

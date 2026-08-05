@@ -17,7 +17,8 @@ namespace Potshot.EditorTools
             // Client boots into the menu; the SERVER build list (below)
             // deliberately excludes it.
             var scenes = new System.Collections.Generic.List<string>
-                { "Assets/Scenes/MainMenu.unity", "Assets/Scenes/DevArena.unity" };
+                { "Assets/Scenes/MainMenu.unity", "Assets/Scenes/Lobby.unity",
+                  "Assets/Scenes/DevArena.unity" };
             scenes.AddRange(System.IO.Directory
                 .GetFiles("Assets/Scenes/Maps", "*.unity")
                 .OrderBy(p => p));
@@ -41,7 +42,7 @@ namespace Potshot.EditorTools
             string outDir = Arg("-potshotOut") ?? "server/build";
             EditorUserBuildSettings.standaloneBuildSubtarget = StandaloneBuildSubtarget.Server;
             var scenes = new System.Collections.Generic.List<string>
-                { "Assets/Scenes/DevArena.unity" };
+                { "Assets/Scenes/DevArena.unity", "Assets/Scenes/Lobby.unity" };
             scenes.AddRange(System.IO.Directory
                 .GetFiles("Assets/Scenes/Maps", "*.unity")
                 .OrderBy(p => p));
