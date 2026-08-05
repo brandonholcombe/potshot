@@ -72,6 +72,13 @@ namespace Potshot.EditorTools
                     PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
                 root.name = "TankNet";
 
+                // Unity rigidbody interpolation still runs under manual
+                // stepping and FIGHTS the prediction smoother (root glides,
+                // graphical corrects — the oscillation IS the reported
+                // ghosting). The smoother owns visuals; the body must snap.
+                root.GetComponent<Rigidbody>().interpolation =
+                    RigidbodyInterpolation.None;
+
                 var nob = root.AddComponent<FishNet.Object.NetworkObject>();
                 var so = new SerializedObject(nob);
                 var enable = so.FindProperty("_enablePrediction");
@@ -85,6 +92,23 @@ namespace Potshot.EditorTools
                 var predictionType = so.FindProperty("_predictionType");
                 int rbIndex = System.Array.IndexOf(predictionType.enumNames, "Rigidbody");
                 predictionType.enumValueIndex = rbIndex;
+
+                // Graphical smoothing (ghosting fix): pointing FishNet at
+                // the visuals child activates its built-in prediction
+                // TransformTickSmoother client-side (defaults: owner interp
+                // 1 tick, spectator 2). Teleport threshold keeps respawn
+                // warps from becoming 5-unit glides.
+                var graphicalProp = so.FindProperty("_graphicalObject");
+                var graphicalChild = root.transform.Find("Graphical");
+                if (graphicalProp == null || graphicalChild == null)
+                {
+                    Debug.LogError("[PrefabFactory] graphical smoothing wiring failed — API drift or missing child");
+                    EditorApplication.Exit(1);
+                    return;
+                }
+                graphicalProp.objectReferenceValue = graphicalChild;
+                var teleport = so.FindProperty("_teleportThreshold");
+                if (teleport != null) teleport.floatValue = 5f;
                 so.ApplyModifiedPropertiesWithoutUndo();
 
                 root.AddComponent<Potshot.Net.NetworkTank>();
@@ -253,14 +277,21 @@ namespace Potshot.EditorTools
                 var hullMat = MaterialFactory.GetOrCreate(MatDir, "Hull", new Color(0.55f, 0.55f, 0.2f));
                 var turretMat = MaterialFactory.GetOrCreate(MatDir, "Turret", new Color(0.4f, 0.45f, 0.2f));
 
-                Visual(root.transform, PrimitiveType.Cube, "HullVisual",
+                // ALL visuals under one identity-transform child: FishNet's
+                // prediction smoother drives this Graphical node between
+                // 30 Hz ticks on TankNet (ghosting fix); offline it's an
+                // inert plain child. Physics stays on the root.
+                var graphical = new GameObject("Graphical").transform;
+                graphical.SetParent(root.transform, false);
+
+                Visual(graphical, PrimitiveType.Cube, "HullVisual",
                     new Vector3(0f, 0.3f, 0f), new Vector3(1.6f, 0.6f, 2.2f), hullMat);
 
                 // Unscaled pivot: children keep true offsets — parenting
                 // them under the scaled cylinder crushed the muzzle height
                 // (y -0.3 became -0.045) and flattened the barrel (M1d).
                 var turret = new GameObject("Turret").transform;
-                turret.SetParent(root.transform, false);
+                turret.SetParent(graphical, false);
                 turret.localPosition = new Vector3(0f, 0.75f, 0f);
                 Visual(turret, PrimitiveType.Cylinder, "TurretVisual",
                     Vector3.zero, new Vector3(1f, 0.15f, 1f), turretMat);

@@ -65,9 +65,15 @@ namespace Potshot.Net
             if (IsOwner)
             {
                 Debug.Log("[Net] owned tank spawned — session live");
-                // Scene camera lost its offline target to CleanOfflineActors.
+                // Follow the SMOOTHED graphical child, never the 30 Hz-
+                // stepped root — smoothing the camera against a stepped
+                // target only attenuates the sawtooth (smoothing review).
                 var follow = FindFirstObjectByType<CameraFollow>();
-                if (follow != null) follow.target = transform;
+                if (follow != null)
+                {
+                    var graphical = transform.Find("Graphical");
+                    follow.target = graphical != null ? graphical : transform;
+                }
                 return;
             }
             // Remote copies must not read the local keyboard or draw HUDs.

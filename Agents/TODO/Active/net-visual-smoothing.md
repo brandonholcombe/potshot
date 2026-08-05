@@ -1,7 +1,7 @@
 # Net — Fix tick-stepping ghosting (tanks + bullets)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — smoother wired (graphical child + None interpolation), inter-tick glide test green; deployed ad9dddb both sides
 
 Brandon (2026-08-04): "constant ghosting with tanks and bullets, it's
 disorienting." Diagnosis: networked physics steps at 30 Hz
