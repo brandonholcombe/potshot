@@ -51,8 +51,11 @@ namespace Potshot.Net
 
         readonly HashSet<int> _connected = new();
         readonly List<NetworkConnection> _pendingSpawns = new();
+        readonly HashSet<int> _awaitingPresence = new();
         NetFfaState _matchState;
         bool _sceneLoadInFlight;
+        bool _botsSpawnedThisMatch;
+        float _presenceDeadline;
         float _pollTimer;
 
         public override void OnStartServer()
@@ -66,6 +69,7 @@ namespace Potshot.Net
             ServerManager.RegisterBroadcast<LobbyCommand>(OnLobbyCommand);
             ServerManager.OnRemoteConnectionState += OnRemoteConnectionState;
             SceneManager.OnLoadEnd += OnSceneLoadEnd;
+            SceneManager.OnClientPresenceChangeEnd += OnClientPresenceChanged;
             NameSync.ServerNameArrived += OnNameArrived;
 
             if (DisableSceneManagement)
@@ -85,6 +89,7 @@ namespace Potshot.Net
             ServerManager.UnregisterBroadcast<LobbyCommand>(OnLobbyCommand);
             ServerManager.OnRemoteConnectionState -= OnRemoteConnectionState;
             SceneManager.OnLoadEnd -= OnSceneLoadEnd;
+            SceneManager.OnClientPresenceChangeEnd -= OnClientPresenceChanged;
             NameSync.ServerNameArrived -= OnNameArrived;
         }
 
@@ -175,6 +180,12 @@ namespace Potshot.Net
                 ReturnToLobby();
             else if (CurrentPhase == Phase.Match)
             {
+                // Stalled-client failsafe: don't gate bots forever.
+                if (!_botsSpawnedThisMatch && Time.time >= _presenceDeadline)
+                {
+                    _awaitingPresence.Clear();
+                    MaybeSpawnBots();
+                }
                 _pollTimer += Time.deltaTime;
                 if (_pollTimer >= 1f)
                 {
@@ -229,23 +240,51 @@ namespace Potshot.Net
             if (!args.QueueData.AsServer) return;
             _sceneLoadInFlight = false;
 
+            // Spawning is PRESENCE-DRIVEN (transition sweep): tanks spawn
+            // per client as each ARRIVES in the new scene, and bots hold
+            // fire until every client is present (a shell fired while a
+            // client still loads renders its whole flight in one
+            // NetworkTransform catch-up burst — the 'fast bullets' bug).
             if (CurrentPhase == Phase.Match)
-                SpawnMatchActors();
-            SpawnAllPending();
-            // Everyone already connected gets their tank for the new scene.
-            foreach (int id in _connected.ToList())
             {
-                if (ServerManager.Clients.TryGetValue(id, out var conn)
-                    && AliveTankFor(id) == null)
-                    SpawnFor(conn);
+                var spawner = FindFirstObjectByType<PlayerSpawner>();
+                if (spawner != null) _matchState = spawner.SpawnMatchState();
+                _botsSpawnedThisMatch = false;
             }
+            _awaitingPresence.Clear();
+            foreach (int id in _connected) _awaitingPresence.Add(id);
+            _presenceDeadline = Time.time + 10f; // a stalled client can't gate forever
+            if (_awaitingPresence.Count == 0) MaybeSpawnBots();
         }
 
+        void OnClientPresenceChanged(ClientPresenceChangeEventArgs args)
+        {
+            if (!args.Added || !IsServerStarted) return;
+            int id = args.Connection.ClientId;
+            _awaitingPresence.Remove(id);
+            if (_connected.Contains(id) && AliveTankFor(id) == null
+                && !_sceneLoadInFlight)
+                SpawnFor(args.Connection);
+            if (_awaitingPresence.Count == 0) MaybeSpawnBots();
+        }
+
+        void MaybeSpawnBots()
+        {
+            if (CurrentPhase != Phase.Match || _botsSpawnedThisMatch) return;
+            _botsSpawnedThisMatch = true;
+            var spawner = FindFirstObjectByType<PlayerSpawner>();
+            if (spawner == null) return;
+            int bots = DisableSceneManagement ? spawner.botCount : BotCount.Value;
+            spawner.SpawnBots(bots, _matchState);
+        }
+
+        /// <summary>Compat/no-scene mode only (real flow is presence-driven).</summary>
         void SpawnMatchActors()
         {
             var spawner = FindFirstObjectByType<PlayerSpawner>();
             if (spawner == null) return;
             _matchState = spawner.SpawnMatchState();
+            _botsSpawnedThisMatch = true;
             int bots = DisableSceneManagement ? spawner.botCount : BotCount.Value;
             spawner.SpawnBots(bots, _matchState);
         }

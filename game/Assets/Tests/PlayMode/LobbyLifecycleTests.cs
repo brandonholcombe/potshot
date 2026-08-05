@@ -165,10 +165,22 @@ namespace Potshot.Tests
             match.respawnDelay = 0.1f;
             yield return WaitFor(() =>
                 Object.FindObjectsByType<BotBrain>(FindObjectsSortMode.None).Length >= 1,
-                10f, "bot spawn");
+                15f, "bot spawn (presence-gated)");
             yield return WaitFor(() =>
                 Object.FindObjectsByType<NetworkTank>(FindObjectsSortMode.None)
                     .Any(t => t.IsOwner), 10f, "my match tank");
+
+            // Camera regression (frozen-camera bug): must acquire the owned
+            // tank within a couple seconds of the match starting.
+            yield return WaitFor(() =>
+            {
+                var myTank = Object.FindObjectsByType<NetworkTank>(FindObjectsSortMode.None)
+                    .FirstOrDefault(t => t.IsOwner);
+                var follow = Object.FindFirstObjectByType<CameraFollow>();
+                return myTank != null && follow != null && follow.target != null
+                    && Vector3.Distance(follow.transform.position,
+                        myTank.transform.position + follow.offset) < 5f;
+            }, 8f, "camera acquired the owned match tank");
 
             // Score 5 kills the honest way: repeatedly execute the bot.
             mine = Object.FindObjectsByType<NetworkTank>(FindObjectsSortMode.None)
@@ -192,6 +204,16 @@ namespace Potshot.Tests
             yield return WaitFor(() =>
                 Object.FindObjectsByType<NetworkTank>(FindObjectsSortMode.None)
                     .Any(t => t.IsOwner), 15f, "warmup respawn");
+
+            // Round-2 regressions (transition sweep): the EventSystem must
+            // survive the swaps (or lobby buttons die again), and no
+            // projectiles may orphan across the scene change.
+            Assert.That(
+                Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>(),
+                Is.Not.Null, "EventSystem lost across scene swaps — round-2 buttons dead");
+            Assert.That(
+                Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None).Length,
+                Is.Zero, "projectiles orphaned across the return swap");
         }
     }
 }

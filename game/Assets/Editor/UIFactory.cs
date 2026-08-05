@@ -85,6 +85,19 @@ namespace Potshot.EditorTools
                     new Vector2(0f, 0f), new Vector2(500f, 470f));
                 standings.alignment = TextAnchor.UpperCenter;
 
+                // Fullscreen mask for the zero-camera window during scene
+                // swaps (transition sweep). Anchored to fill.
+                var loading = new GameObject("LoadingPanel");
+                var loadingRt = loading.AddComponent<RectTransform>();
+                loadingRt.SetParent(rootGo.transform, false);
+                loadingRt.anchorMin = Vector2.zero;
+                loadingRt.anchorMax = Vector2.one;
+                loadingRt.sizeDelta = Vector2.zero;
+                loading.AddComponent<Image>().color = new Color(0.04f, 0.05f, 0.06f, 1f);
+                MakeText(loading.transform, "LoadingText", "Loading…", 44,
+                    Vector2.zero, new Vector2(500f, 80f), FontStyle.Bold);
+                loading.SetActive(false);
+
                 Directory.CreateDirectory("Assets/Resources/UI");
                 PrefabUtility.SaveAsPrefabAsset(rootGo, "Assets/Resources/UI/LobbyOverlay.prefab");
                 Debug.Log("[UIFactory] LobbyOverlay.prefab saved");
@@ -105,6 +118,7 @@ namespace Potshot.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.06f, 0.07f, 0.09f);
             cam.orthographic = true;
+            cam.gameObject.AddComponent<AudioListener>();
 
             var canvasGo = new GameObject("Canvas");
             var canvas = canvasGo.AddComponent<Canvas>();

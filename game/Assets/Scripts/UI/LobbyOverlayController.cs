@@ -16,7 +16,9 @@ namespace Potshot.UI
         GameObject _panel;
         LobbyState _lobby;
         Text _roster, _waiting, _countdown, _standings, _mapLabel, _botsLabel, _targetLabel;
-        GameObject _leaderPanel, _postMatchPanel;
+        GameObject _leaderPanel, _postMatchPanel, _loadingPanel;
+        FishNet.Managing.NetworkManager _sceneEventsNm;
+        bool _loading;
         float _rebuildTimer;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -34,6 +36,19 @@ namespace Potshot.UI
 
         void Update()
         {
+            // Scene swaps leave a seconds-long zero-camera black window —
+            // mask it with a Loading panel driven by FishNet's client
+            // scene-load events (transition sweep).
+            if (_sceneEventsNm == null)
+            {
+                _sceneEventsNm = FindFirstObjectByType<FishNet.Managing.NetworkManager>();
+                if (_sceneEventsNm != null)
+                {
+                    _sceneEventsNm.SceneManager.OnLoadStart += _ => _loading = true;
+                    _sceneEventsNm.SceneManager.OnLoadEnd += _ => _loading = false;
+                }
+            }
+
             if (_lobby == null)
             {
                 _lobby = FindFirstObjectByType<LobbyState>();
@@ -69,6 +84,8 @@ namespace Potshot.UI
             _targetLabel = t.Find("LeaderPanel/TargetLabel").GetComponent<Text>();
             _leaderPanel = t.Find("LeaderPanel").gameObject;
             _postMatchPanel = t.Find("PostMatchPanel").gameObject;
+            var loading = t.Find("LoadingPanel");
+            _loadingPanel = loading != null ? loading.gameObject : null;
 
             Wire(t, "LeaderPanel/MapButton", () => Send(0, NextMap(), 0));
             Wire(t, "LeaderPanel/BotsMinus", () => Send(1, null, _lobby.BotCount.Value - 1));
@@ -86,6 +103,8 @@ namespace Potshot.UI
 
         void RenderPhase()
         {
+            if (_loadingPanel != null) _loadingPanel.SetActive(_loading);
+
             bool warmup = _lobby.CurrentPhase == LobbyState.Phase.Warmup;
             bool countdown = _lobby.CurrentPhase == LobbyState.Phase.Countdown;
             bool postMatch = _lobby.CurrentPhase == LobbyState.Phase.PostMatch;
@@ -100,6 +119,16 @@ namespace Potshot.UI
             _rebuildTimer -= Time.deltaTime;
             if (_rebuildTimer > 0f) return;
             _rebuildTimer = 0.25f;
+
+            // Scene swaps destroy the (scene-local) EventSystem while this
+            // DDOL panel survives — re-ensure or round-2 lobby buttons die
+            // (dead-buttons, round three; transition sweep).
+            if (FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+            {
+                var events = new GameObject("EventSystem");
+                events.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                events.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
 
             if (warmup || countdown)
             {

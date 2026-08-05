@@ -152,6 +152,13 @@ namespace Potshot.EditorTools
                 clientAuth.boolValue = false; // server-authoritative (M2c review)
                 compConfig.enumValueIndex = System.Array.IndexOf(
                     compConfig.enumNames, "Rigidbody");
+                // Shells seen late (spawned during a client's scene load)
+                // must SNAP to current state, not render their whole flight
+                // as a catch-up glide — the 'fast bullets' bug (sweep).
+                var teleport = so.FindProperty("_enableTeleport");
+                var teleportThreshold = so.FindProperty("_teleportThreshold");
+                if (teleport != null) teleport.boolValue = true;
+                if (teleportThreshold != null) teleportThreshold.floatValue = 2f;
                 so.ApplyModifiedPropertiesWithoutUndo();
 
                 root.AddComponent<Potshot.Net.NetworkProjectile>();

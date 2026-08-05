@@ -60,26 +60,34 @@ namespace Potshot.Net
             if (_controller != null) _controller.ExternallyDriven = false;
         }
 
+        Transform _graphical;
+
         public override void OnStartClient()
         {
             if (IsOwner)
             {
                 Debug.Log("[Net] owned tank spawned — session live");
-                // Follow the SMOOTHED graphical child, never the 30 Hz-
-                // stepped root — smoothing the camera against a stepped
-                // target only attenuates the sawtooth (smoothing review).
-                var follow = FindFirstObjectByType<CameraFollow>();
-                if (follow != null)
-                {
-                    var graphical = transform.Find("Graphical");
-                    follow.target = graphical != null ? graphical : transform;
-                }
-                return;
+                _graphical = transform.Find("Graphical");
+                return; // camera retarget happens in Update — see below
             }
             // Remote copies must not read the local keyboard or draw HUDs.
             Destroy(GetComponent<PlayerTankInput>());
             Destroy(GetComponent<PlaytestHotkeys>());
             Destroy(GetComponent<DevHud>());
+        }
+
+        /// <summary>Owner camera acquisition by POLLING: tanks can spawn
+        /// while the client is still loading the map (no CameraFollow
+        /// exists yet) — a one-shot retarget in OnStartClient silently
+        /// missed and froze the camera for the whole first life
+        /// (transition sweep). Snap, never lerp, on (re)acquire.</summary>
+        void Update()
+        {
+            if (!IsOwner || !IsClientStarted) return;
+            var follow = FindFirstObjectByType<CameraFollow>();
+            if (follow == null) return;
+            var desired = _graphical != null ? _graphical : transform;
+            if (follow.target != desired) follow.SnapTo(desired);
         }
 
         protected override void TimeManager_OnTick()

@@ -379,6 +379,7 @@ namespace Potshot.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.1f, 0.1f, 0.12f);
             var follow = cam.gameObject.AddComponent<CameraFollow>();
+            cam.gameObject.AddComponent<AudioListener>();
             follow.target = player.transform;
 
             var mode = new GameObject("FfaGameMode").AddComponent<FfaGameMode>();

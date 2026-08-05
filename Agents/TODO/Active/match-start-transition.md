@@ -1,7 +1,7 @@
 # Net/UX — Match-start transition sweep (fast bullets, camera, the rest)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — 6 fixes shipped (camera poll+snap, presence-gated bots, NT teleport, round-2 EventSystem, loading mask, AudioListeners); deployed b2ad88e via new strict deploy.sh
 
 Brandon (2026-08-04): bullets far too fast at match start; weird camera
 at match start. Plus a process correction: the lobby slice shipped a
