@@ -23,6 +23,10 @@ namespace Potshot.EditorTools
 
             SetFixedTimestep(1f / 60f);
             SetLayerName(PotshotLayers.Projectile, "Projectile");
+            // Pre-join status panel fetches plain http://host:8080/status;
+            // Unity 6 default (NotAllowed) kills every insecure request.
+            // TLS via ingress is the M4 upgrade path.
+            PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[ProjectConfigurator] applied: company={PlayerSettings.companyName} " +

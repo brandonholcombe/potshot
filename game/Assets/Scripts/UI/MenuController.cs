@@ -17,6 +17,8 @@ namespace Potshot.UI
         InputField _addressField;
         Text _mapLabel;
         GameObject _settingsPanel;
+        GameObject _statusPanel;
+        Text _statusText;
 
         string[] _maps;
         int _mapIndex;
@@ -38,9 +40,13 @@ namespace Potshot.UI
             _nameField.characterLimit = PlayerNameRules.MaxLength;
             _addressField.text = NetBootstrap.DefaultHost;
 
-            Wire("PlayOnlineButton", () => Launch(
+            _statusPanel = transform.Find("StatusPanel").gameObject;
+            _statusText = Find<Text>("StatusPanel/StatusText");
+            Wire("PlayOnlineButton", ShowPreJoin);
+            Wire("StatusPanel/ConfirmJoinButton", () => Launch(
                 () => NetBootstrap.StartClient(NetBootstrap.DefaultHost),
                 NetBootstrap.DefaultGameScene));
+            Wire("StatusPanel/StatusBackButton", () => _statusPanel.SetActive(false));
             Wire("HostButton", () => Launch(NetBootstrap.StartHost, SelectedMap()));
             Wire("JoinRow/JoinButton", () => Launch(
                 () => NetBootstrap.StartClient(_addressField.text.Trim()),
@@ -96,6 +102,48 @@ namespace Potshot.UI
                 SceneManager.sceneLoaded -= OnLoaded;
                 connect?.Invoke();
             }
+        }
+
+        void ShowPreJoin()
+        {
+            _statusPanel.SetActive(true);
+            _statusText.color = new Color(0.92f, 0.93f, 0.95f, 1f);
+            _statusText.text = "Checking server…";
+            StartCoroutine(FetchStatus());
+        }
+
+        System.Collections.IEnumerator FetchStatus()
+        {
+            using var req = UnityEngine.Networking.UnityWebRequest.Get(
+                $"http://{NetBootstrap.DefaultHost}:8080/status");
+            req.timeout = 4;
+            yield return req.SendWebRequest();
+            if (!_statusPanel.activeSelf) yield break; // user backed out
+
+            if (req.result != UnityEngine.Networking.UnityWebRequest.Result.Success)
+            {
+                _statusText.text = "Server unreachable — you can still try to join.";
+                yield break;
+            }
+
+            Potshot.Net.PotshotStatus.Payload p;
+            try
+            {
+                p = JsonUtility.FromJson<Potshot.Net.PotshotStatus.Payload>(
+                    req.downloadHandler.text);
+            }
+            catch
+            {
+                _statusText.text = "Server answered garbage — proceed at your own risk.";
+                yield break;
+            }
+
+            bool versionOk = p.version == GameVersion.Version;
+            _statusText.text =
+                $"SERVER ONLINE\n{p.players} players · {p.bots} bots · {p.map}\n" +
+                (versionOk ? $"v{p.version}"
+                    : $"version mismatch — server {p.version}, you {GameVersion.Version}");
+            if (!versionOk) _statusText.color = new Color(0.95f, 0.45f, 0.4f, 1f);
         }
 
         void SaveName()

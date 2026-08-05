@@ -1,7 +1,7 @@
 # UI — Pre-join server status panel (+ status endpoint)
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — live status JSON verified from cluster; pause EventSystem fix shipped; gate 61/61; deployed e3f4bd7
 
 Brandon (2026-08-04): "selecting play online does not provide a room
 browser or anything. Just straight into the action." One server = one

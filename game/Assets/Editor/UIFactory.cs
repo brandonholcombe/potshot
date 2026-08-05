@@ -110,6 +110,20 @@ namespace Potshot.EditorTools
                 new Vector2(0f, -140f), new Vector2(300f, 60f));
             settings.gameObject.SetActive(false); // starts hidden in the SAVED scene
 
+            // Pre-join status panel (Brandon: show the room before joining).
+            var status = MakePanel(root, "StatusPanel",
+                Vector2.zero, new Vector2(640f, 320f));
+            status.GetComponent<Image>().color = new Color(0.08f, 0.09f, 0.11f, 0.98f);
+            MakeText(status, "StatusTitle", "POTSHOT.KODLOKI.IO", 32,
+                new Vector2(0f, 110f), new Vector2(560f, 50f), FontStyle.Bold);
+            MakeText(status, "StatusText", "Checking server…", 26,
+                new Vector2(0f, 30f), new Vector2(560f, 90f));
+            MakeButton(status, "ConfirmJoinButton", "JOIN",
+                new Vector2(-120f, -100f), new Vector2(220f, 64f));
+            MakeButton(status, "StatusBackButton", "BACK",
+                new Vector2(120f, -100f), new Vector2(220f, 64f));
+            status.gameObject.SetActive(false);
+
             canvasGo.AddComponent<MenuController>();
 
             Directory.CreateDirectory("Assets/Scenes");

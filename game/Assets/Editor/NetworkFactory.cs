@@ -36,6 +36,7 @@ namespace Potshot.EditorTools
                 var nm = root.AddComponent<NetworkManager>();
                 root.AddComponent<VersionAuthenticator>();
                 root.AddComponent<Potshot.Net.NameSync>();
+                root.AddComponent<Potshot.Net.PotshotStatus>();
 
                 var spawner = root.AddComponent<Potshot.Net.PlayerSpawner>();
                 var tankNet = AssetDatabase.LoadAssetAtPath<GameObject>(
