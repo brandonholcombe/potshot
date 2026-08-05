@@ -22,6 +22,17 @@ namespace Potshot.Net
         {
             if (Input.GetKeyDown(KeyCode.H)) NetBootstrap.StartHost();
             if (Input.GetKeyDown(KeyCode.J)) NetBootstrap.StartClient("localhost");
+            if (Input.GetKeyDown(KeyCode.K)) NetBootstrap.StartClient(NetBootstrap.DefaultHost);
+        }
+
+        void OnGUI()
+        {
+            var nm = FindFirstObjectByType<FishNet.Managing.NetworkManager>();
+            string status = nm == null ? "offline (H host · J localhost · K kodloki)"
+                : nm.ClientManager.Started ? $"online — {NetBootstrap.DefaultHost}"
+                : nm.ServerManager.Started ? "hosting"
+                : "connecting…";
+            GUI.Label(new Rect(Screen.width * 0.5f - 160f, 8f, 340f, 22f), status);
         }
     }
 }

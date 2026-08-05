@@ -12,6 +12,11 @@ namespace Potshot.Net
     /// </summary>
     public static class NetBootstrap
     {
+        /// <summary>Friends build: no args = play on kodloki.</summary>
+        public const string DefaultHost = "potshot.kodloki.io";
+
+        public enum StartupAction { Offline, Server, Client }
+
         public static NetworkManager EnsureHub()
         {
             var nm = UnityEngine.Object.FindFirstObjectByType<NetworkManager>();
@@ -38,8 +43,15 @@ namespace Potshot.Net
 
         public static void StartClient(string host)
         {
-            CleanOfflineActors();
+            // Offline actors survive until the connection actually opens —
+            // an unreachable server leaves the offline bot game playable
+            // instead of an empty arena.
             var nm = EnsureHub();
+            nm.ClientManager.OnClientConnectionState += args =>
+            {
+                if (args.ConnectionState == FishNet.Transporting.LocalConnectionState.Started)
+                    CleanOfflineActors();
+            };
             nm.ClientManager.StartConnection(host);
         }
 
@@ -69,15 +81,32 @@ namespace Potshot.Net
                 mode.enabled = false;
         }
 
+        /// <summary>Pure and unit-tested: what should this process do?</summary>
+        public static (StartupAction action, string host) ResolveStartup(
+            string[] args, bool isEditor)
+        {
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "-potshotServer") return (StartupAction.Server, null);
+                if (args[i] == "-potshotClient" && i + 1 < args.Length)
+                    return (StartupAction.Client, args[i + 1]);
+                if (args[i] == "-potshotOffline") return (StartupAction.Offline, null);
+            }
+            // Player builds default to the kodloki server (Brandon,
+            // 2026-08-04); the editor stays offline for the dev loop.
+            return isEditor ? (StartupAction.Offline, null)
+                            : (StartupAction.Client, DefaultHost);
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void InitFromCommandLine()
         {
-            var args = Environment.GetCommandLineArgs();
-            for (int i = 0; i < args.Length; i++)
+            var (action, host) = ResolveStartup(
+                Environment.GetCommandLineArgs(), Application.isEditor);
+            switch (action)
             {
-                if (args[i] == "-potshotServer") { StartServer(); return; }
-                if (args[i] == "-potshotClient" && i + 1 < args.Length)
-                { StartClient(args[i + 1]); return; }
+                case StartupAction.Server: StartServer(); break;
+                case StartupAction.Client: StartClient(host); break;
             }
         }
     }

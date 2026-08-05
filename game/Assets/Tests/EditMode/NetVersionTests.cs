@@ -22,6 +22,34 @@ namespace Potshot.Tests
         }
 
         [Test]
+        public void Startup_DefaultsToKodlokiInPlayerBuilds()
+        {
+            var (action, host) = NetBootstrap.ResolveStartup(
+                new[] { "/path/to/app" }, isEditor: false);
+            Assert.That(action, Is.EqualTo(NetBootstrap.StartupAction.Client));
+            Assert.That(host, Is.EqualTo("potshot.kodloki.io"));
+        }
+
+        [Test]
+        public void Startup_EditorStaysOffline() =>
+            Assert.That(NetBootstrap.ResolveStartup(new string[0], isEditor: true).action,
+                Is.EqualTo(NetBootstrap.StartupAction.Offline));
+
+        [Test]
+        public void Startup_ExplicitArgsWin()
+        {
+            Assert.That(NetBootstrap.ResolveStartup(
+                new[] { "-potshotOffline" }, false).action,
+                Is.EqualTo(NetBootstrap.StartupAction.Offline));
+            Assert.That(NetBootstrap.ResolveStartup(
+                new[] { "-potshotServer" }, false).action,
+                Is.EqualTo(NetBootstrap.StartupAction.Server));
+            Assert.That(NetBootstrap.ResolveStartup(
+                new[] { "-potshotClient", "example.com" }, false).host,
+                Is.EqualTo("example.com"));
+        }
+
+        [Test]
         public void FishNet_IsPresent()
         {
             // Compilation of Potshot.Net against FishNet.Runtime is itself
