@@ -42,6 +42,8 @@ namespace Potshot.UI
             if (_panel != null) { Close(); return; }
             var prefab = Resources.Load<GameObject>("UI/PauseMenu");
             if (prefab == null) return;
+            EnsureEventSystem(); // game scenes have none — without it every
+                                 // pause button is dead (Brandon-reported)
             _panel = Instantiate(prefab);
             Wire("Panel/ResumeButton", Close);
             Wire("Panel/LeaveButton", () =>
@@ -54,6 +56,17 @@ namespace Potshot.UI
         }
 
         public bool IsOpen => _panel != null;
+
+        /// <summary>Scene-local (NOT DontDestroyOnLoad — the menu scene has
+        /// its own; two live EventSystems fight).</summary>
+        static void EnsureEventSystem()
+        {
+            if (Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() != null)
+                return;
+            var go = new GameObject("EventSystem");
+            go.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            go.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
 
         void Close()
         {

@@ -126,6 +126,9 @@ namespace Potshot.Tests
 
             controller.Toggle();
             Assert.That(controller.IsOpen, Is.True, "pause panel should open");
+            Assert.That(
+                Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>(),
+                Is.Not.Null, "no EventSystem — pause buttons would be dead");
             controller.Toggle();
             Assert.That(controller.IsOpen, Is.False, "pause panel should close");
         }
