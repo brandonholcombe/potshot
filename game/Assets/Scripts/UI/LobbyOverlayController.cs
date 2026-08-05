@@ -25,6 +25,11 @@ namespace Potshot.UI
             var go = new GameObject("LobbyOverlayController");
             go.AddComponent<LobbyOverlayController>();
             DontDestroyOnLoad(go);
+            // Core is uGUI-free — wire the pointer-over-UI check here so
+            // clicking lobby/pause buttons doesn't fire the cannon.
+            Potshot.PlayerTankInput.PointerOverUi = () =>
+                UnityEngine.EventSystems.EventSystem.current != null
+                && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
         }
 
         void Update()
@@ -45,6 +50,14 @@ namespace Potshot.UI
             if (_panel != null) return;
             var prefab = Resources.Load<GameObject>("UI/LobbyOverlay");
             if (prefab == null) return;
+            // Game scenes ship no EventSystem (menu-scene-only) — without
+            // one every overlay button is deaf (pause-menu bug, round two).
+            if (FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+            {
+                var events = new GameObject("EventSystem");
+                events.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                events.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
             _panel = Instantiate(prefab, transform);
             var t = _panel.transform;
             _roster = t.Find("RosterPanel/RosterText").GetComponent<Text>();

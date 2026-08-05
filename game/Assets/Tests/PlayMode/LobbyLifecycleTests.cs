@@ -120,6 +120,16 @@ namespace Potshot.Tests
             Assert.That(hp.Health, Is.EqualTo(hp.maxHealth), "warmup tank must be invulnerable");
             Assert.That(lobby.CurrentPhase, Is.EqualTo(LobbyState.Phase.Warmup));
 
+            // Overlay clickability regression (Brandon: lobby buttons dead,
+            // clicks fell through to fire): EventSystem must exist while
+            // the overlay is up, and the fire-block hook must be wired.
+            yield return null;
+            Assert.That(
+                Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>(),
+                Is.Not.Null, "no EventSystem in warmup — lobby buttons would be dead");
+            Assert.That(PlayerTankInput.PointerOverUi, Is.Not.Null,
+                "pointer-over-UI fire block not wired");
+
             // I am the leader (only player).
             yield return WaitFor(() =>
                 lobby.LeaderId.Value == _nm.ClientManager.Connection.ClientId, 5f, "leadership");

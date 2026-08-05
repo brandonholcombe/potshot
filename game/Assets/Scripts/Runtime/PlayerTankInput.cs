@@ -12,6 +12,11 @@ namespace Potshot
     {
         static readonly Plane Ground = new Plane(Vector3.up, 0f);
 
+        /// <summary>Set by the UI assembly (Core stays uGUI-free): returns
+        /// true while the pointer is over UI, so clicks on lobby/pause
+        /// buttons don't fire the cannon.</summary>
+        public static System.Func<bool> PointerOverUi;
+
         TankController _controller;
         Vector3 _lastAim;
 
@@ -37,7 +42,7 @@ namespace Potshot
             {
                 Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")),
                 AimWorldPos = aim,
-                Fire = Input.GetButton("Fire1"),
+                Fire = Input.GetButton("Fire1") && !(PointerOverUi?.Invoke() ?? false),
                 Boost = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.Space),
             };
         }
