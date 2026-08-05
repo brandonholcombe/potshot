@@ -1,6 +1,6 @@
 {
-  "root": "bc11a221dd650382",
-  "generated": "2026-08-04T23:59:56Z",
+  "root": "9e80ac0e039f5d20",
+  "generated": "2026-08-05T00:22:17Z",
   "status": "aligned",
   "symbols": {
     "architecture": {
@@ -28,11 +28,11 @@
       "interlocks": {}
     },
     "deployment": {
-      "hash": "613cf536594aae5e",
+      "hash": "9007fbe41b101943",
       "means": "deployment: cluster=tow-c1, expects_transport=tugboat-udp, host=potshot.kodloki.io, image=bholcombe/potshot-server, namespace=potshot, udp_exposure=hostPort-7777",
       "docs": {
         "docs/deployment.md": {
-          "hash": "8be4fbfe02cb7ec6",
+          "hash": "5096353562406758",
           "status": "current"
         }
       },

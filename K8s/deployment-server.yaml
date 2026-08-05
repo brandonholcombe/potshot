@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: potshot-server
+  namespace: potshot
+  labels:
+    app: potshot-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # two servers cannot share the hostPort
+  selector:
+    matchLabels:
+      app: potshot-server
+  template:
+    metadata:
+      labels:
+        app: potshot-server
+    spec:
+      nodeSelector:
+        potshot.kodloki.io/game-node: "true"
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: server
+          image: bholcombe/potshot-server:dev
+          imagePullPolicy: Always # :dev is a moving tag
+          ports:
+            - containerPort: 7777
+              hostPort: 7777
+              protocol: UDP
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          # No liveness probe: UDP game port isn't trivially probeable;
+          # process death restarts the pod anyway (M3 review).

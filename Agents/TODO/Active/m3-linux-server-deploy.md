@@ -1,7 +1,7 @@
 # M3 — Linux server build, Docker, first cluster deploy
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — LIVE on tow-c1; E2E: Mac headless client authenticated + spawned via potshot.kodloki.io (172.238.48.241)
 
 Brandon (2026-08-04): deploy to the kodloki cluster for testing now.
 Walking-skeleton deploy: movement-only multiplayer on real infra; m2c

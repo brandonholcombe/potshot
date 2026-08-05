@@ -8,7 +8,7 @@
 | M1a | Unity MCP bridge (trial) | ✅ Complete (2026-08-04) | mcp-unity 1.4.0; editor-daemon.sh; trial verdict due at M1 end. m1b screenshot rig ✅ (probe + play-mode capture) |
 | M1 | Core game offline: tank, 4 weapons, arena, pickups, bots, FFA rounds | ✅ Complete (2026-08-04) | 34-test gate + 4 visual; feel playtest-confirmed; self-damage on ricochets |
 | M2 | FishNet netcode | 🚧 In progress | m2a install+handshake ✅, m2b predicted movement ✅; next: m2c weapons/score, m2d multi-process harness |
-| M3 | Dedicated server: Linux headless build, Docker, version handshake | 📋 Backlog | Needs linux-server Unity module |
+| M3 | Dedicated server: Linux build, Docker, first deploy | ✅ Complete (2026-08-04) | LIVE: potshot.kodloki.io:7777/udp on tow-c1; E2E client verified |
 | M4 | Deploy: K8s manifests, hostPort UDP, DNS CronJob, status endpoint, ArgoCD | 📋 Backlog | `potshot.kodloki.io` live |
 | M5 | Friends alpha: dev builds distributed, feedback loop, weapons/maps/modes | 📋 Backlog | |
 | M6 | Steam: branding lock + vetting, Steamworks module, FishySteamworks, store page, release | 📋 Backlog | $100 fee; 4–6 wk process; human-heavy |

@@ -63,7 +63,9 @@ namespace Potshot.Net
 
         void OnClientReceivedResponse(VersionResponseBroadcast msg, Channel channel)
         {
-            if (!msg.Passed)
+            if (msg.Passed)
+                Debug.Log("[Net] authenticated by server");
+            else
                 Debug.LogWarning($"[Net] server rejected us: {msg.Reason}");
         }
 

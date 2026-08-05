@@ -21,12 +21,27 @@ the game server cannot sit behind a `LoadBalancer` service:
   the eloup-wizard secrets, mounted as a Secret); updates on drift. Node
   recycles therefore cost ≤5 min + client reconnect.
 
-## Status endpoint (HTTP)
+## Status endpoint (HTTP) — SPLIT HOST (M3 review)
 
-The server exposes `GET /status` (players online, version, uptime, map) on
-8080/tcp → normal Service + Ingress (`potshot.kodloki.io`, ingress-nginx,
-cert-manager `letsencrypt-prod`). Also serves the client download link at M5.
-Web traffic goes through the LB at 172.232.176.47; game traffic does NOT.
+One hostname cannot point at both the game node and the ingress LB.
+Game: `potshot.kodloki.io` → game node public IP (A record, TTL 300).
+Status (M4): `status.potshot.kodloki.io` → 172.232.176.47 via ingress-nginx
++ cert-manager. `GET /status` (players online, version, uptime, map) on
+8080/tcp; serves the client download link at M5.
+
+## Deployed state (M3, 2026-08-04)
+
+- Live: `bholcombe/potshot-server:dev` (+ git-sha tag) on tow-c1, namespace
+  `potshot`, node `lke484433-700897-418c61570000` (label
+  `potshot.kodloki.io/game-node=true`), hostPort 7777/udp.
+  `potshot.kodloki.io` → 172.238.48.241. E2E verified: headless Mac client
+  authenticated + spawned across the internet.
+- Node internal IPs are 192.168.x (docs previously said 172.31.x — corrected).
+- Known limitation (fix in M4): the labeled node is an AUTOSCALED node —
+  scale-down or recycle strands the pod (only one node is labeled) and
+  changes the public IP. The M4 DNS-reconciler CronJob + a labeled
+  stable-pool node address this. kubectl applied by hand; ArgoCD wiring
+  is also M4.
 
 ## Images
 

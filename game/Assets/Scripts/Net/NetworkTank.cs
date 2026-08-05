@@ -60,8 +60,15 @@ namespace Potshot.Net
 
         public override void OnStartClient()
         {
+            if (IsOwner)
+            {
+                Debug.Log("[Net] owned tank spawned — session live");
+                // Scene camera lost its offline target to CleanOfflineActors.
+                var follow = FindFirstObjectByType<CameraFollow>();
+                if (follow != null) follow.target = transform;
+                return;
+            }
             // Remote copies must not read the local keyboard or draw HUDs.
-            if (IsOwner) return;
             Destroy(GetComponent<PlayerTankInput>());
             Destroy(GetComponent<PlaytestHotkeys>());
             Destroy(GetComponent<DevHud>());

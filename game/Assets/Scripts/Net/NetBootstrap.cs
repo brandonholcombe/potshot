@@ -32,11 +32,13 @@ namespace Potshot.Net
 
         public static void StartServer()
         {
+            CleanOfflineActors();
             EnsureHub().ServerManager.StartConnection();
         }
 
         public static void StartClient(string host)
         {
+            CleanOfflineActors();
             var nm = EnsureHub();
             nm.ClientManager.StartConnection(host);
         }
@@ -44,9 +46,27 @@ namespace Potshot.Net
         /// <summary>Server + local client in one process (dev loop).</summary>
         public static void StartHost()
         {
+            CleanOfflineActors();
             var nm = EnsureHub();
             nm.ServerManager.StartConnection();
             nm.ClientManager.StartConnection();
+        }
+
+        /// <summary>Networked sessions own gameplay: scene-local offline
+        /// tanks (player + bots) and the offline FfaGameMode step aside or
+        /// every client runs phantom local actors beside the networked
+        /// ones (M3). Networked bots/FFA return in m2c.</summary>
+        static void CleanOfflineActors()
+        {
+            foreach (var tank in UnityEngine.Object.FindObjectsByType<TankController>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (tank.GetComponent<FishNet.Object.NetworkObject>() == null)
+                    UnityEngine.Object.Destroy(tank.gameObject);
+            }
+            foreach (var mode in UnityEngine.Object.FindObjectsByType<FfaGameMode>(
+                FindObjectsSortMode.None))
+                mode.enabled = false;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
