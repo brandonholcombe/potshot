@@ -18,8 +18,13 @@ namespace Potshot.Net
             DontDestroyOnLoad(go);
         }
 
+        static bool InMenu =>
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
+                == NetBootstrap.MenuScene;
+
         void Update()
         {
+            if (InMenu) return; // the menu owns connection choices
             if (Input.GetKeyDown(KeyCode.H)) NetBootstrap.StartHost();
             if (Input.GetKeyDown(KeyCode.J)) NetBootstrap.StartClient("localhost");
             if (Input.GetKeyDown(KeyCode.K)) NetBootstrap.StartClient(NetBootstrap.DefaultHost);
@@ -27,6 +32,7 @@ namespace Potshot.Net
 
         void OnGUI()
         {
+            if (InMenu) return;
             var nm = FindFirstObjectByType<FishNet.Managing.NetworkManager>();
             string status = nm == null ? "offline (H host · J localhost · K kodloki)"
                 : nm.ClientManager.Started ? $"online — {NetBootstrap.DefaultHost}"

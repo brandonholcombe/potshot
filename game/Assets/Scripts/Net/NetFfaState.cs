@@ -19,8 +19,22 @@ namespace Potshot.Net
     {
         public float respawnDelay = 2f;
 
+        public struct KillFeedBroadcast : FishNet.Broadcast.IBroadcast
+        {
+            public string Killer;
+            public string Victim;
+            public bool Self;
+        }
+
         /// <summary>scoreKey → kills.</summary>
         public readonly SyncDictionary<int, int> Kills = new();
+
+        /// <summary>scoreKey → display name (bots "Bot N"; humans arrive
+        /// via NameSync, possibly after the tank spawn).</summary>
+        public readonly SyncDictionary<int, string> Names = new();
+
+        /// <summary>Client-side kill feed lines (newest last).</summary>
+        public readonly List<(string line, float expiry)> FeedLines = new();
 
         readonly List<(int scoreKey, NetworkConnection conn, bool bot, float at)> _pendingRespawns = new();
         readonly Dictionary<Damageable, int> _tracked = new();
@@ -37,7 +51,35 @@ namespace Potshot.Net
             var sceneMode = FindFirstObjectByType<FfaGameMode>(FindObjectsInactive.Include);
             if (sceneMode != null && sceneMode.spawnPoints.Length > 0)
                 _spawnPoints = sceneMode.spawnPoints;
+            NameSync.ServerNameArrived += OnServerNameArrived;
         }
+
+        public override void OnStopServer() =>
+            NameSync.ServerNameArrived -= OnServerNameArrived;
+
+        public override void OnStartClient() =>
+            ClientManager.RegisterBroadcast<KillFeedBroadcast>(OnKillFeed);
+
+        public override void OnStopClient() =>
+            ClientManager.UnregisterBroadcast<KillFeedBroadcast>(OnKillFeed);
+
+        void OnServerNameArrived(int clientId, string name)
+        {
+            if (Kills.ContainsKey(clientId)) Names[clientId] = name;
+        }
+
+        void OnKillFeed(KillFeedBroadcast msg, FishNet.Transporting.Channel channel)
+        {
+            string line = msg.Self
+                ? $"{msg.Victim} potshotted themselves"
+                : $"{msg.Killer} potshotted {msg.Victim}";
+            FeedLines.Add((line, Time.time + 6f));
+            while (FeedLines.Count > 4) FeedLines.RemoveAt(0);
+        }
+
+        string DisplayName(int key) =>
+            Names.TryGetValue(key, out var n) ? n
+                : key < 0 ? $"Bot{-key}" : $"Player{key}";
 
         /// <summary>Server: called by PlayerSpawner for every spawned tank.</summary>
         public void Track(NetworkObject tank, int scoreKey, bool isBot)
@@ -46,6 +88,12 @@ namespace Potshot.Net
             if (hp == null || _tracked.ContainsKey(hp)) return;
             _tracked[hp] = scoreKey;
             if (!Kills.ContainsKey(scoreKey)) Kills[scoreKey] = 0;
+            if (!Names.ContainsKey(scoreKey))
+            {
+                var nameSync = FindFirstObjectByType<NameSync>();
+                Names[scoreKey] = isBot ? $"Bot{-scoreKey}"
+                    : nameSync != null ? nameSync.GetName(scoreKey) : $"Player{scoreKey}";
+            }
             var conn = tank.Owner != null && tank.Owner.IsValid ? tank.Owner : null;
             hp.Died += (victim, source) => OnTankDied(victim, source, scoreKey, conn, isBot);
         }
@@ -73,6 +121,12 @@ namespace Potshot.Net
             int scored = self ? victimKey : killerKey;
             Kills[scored] = (Kills.TryGetValue(scored, out int cur) ? cur : 0)
                             + FfaRules.ScoreDelta(self);
+            ServerManager.Broadcast(new KillFeedBroadcast
+            {
+                Killer = DisplayName(killerKey),
+                Victim = DisplayName(victimKey),
+                Self = self,
+            });
 
             _tracked.Remove(victim);
             _pendingRespawns.Add((victimKey, conn, isBot, _elapsed + respawnDelay));
@@ -105,8 +159,16 @@ namespace Potshot.Net
             foreach (var kv in Kills.OrderByDescending(kv => kv.Value))
             {
                 y += 20f;
-                string name = kv.Key < 0 ? $"Bot{-kv.Key}" : $"Player{kv.Key}";
-                GUI.Label(new Rect(Screen.width - 210f, y, 200f, 22f), $"{name}: {kv.Value}");
+                GUI.Label(new Rect(Screen.width - 210f, y, 200f, 22f),
+                    $"{DisplayName(kv.Key)}: {kv.Value}");
+            }
+
+            FeedLines.RemoveAll(f => f.expiry < Time.time);
+            float fy = 40f;
+            foreach (var (line, _) in FeedLines)
+            {
+                GUI.Label(new Rect(12f, fy, 420f, 22f), line);
+                fy += 20f;
             }
         }
     }

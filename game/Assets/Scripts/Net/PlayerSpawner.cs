@@ -35,6 +35,13 @@ namespace Potshot.Net
 
         void OnServerState(FishNet.Transporting.ServerConnectionStateArgs args)
         {
+            if (args.ConnectionState == FishNet.Transporting.LocalConnectionState.Stopped)
+            {
+                // Re-hosting after Leave Match must respawn bots (UI review).
+                _botsSpawned = false;
+                _ffa = null;
+                return;
+            }
             if (args.ConnectionState != FishNet.Transporting.LocalConnectionState.Started)
                 return;
             EnsureFfaState();

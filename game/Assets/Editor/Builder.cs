@@ -14,8 +14,10 @@ namespace Potshot.EditorTools
             // The subtarget is GLOBAL editor state — BuildLinuxServer sets
             // Server and it sticks, breaking this build (M3).
             EditorUserBuildSettings.standaloneBuildSubtarget = StandaloneBuildSubtarget.Player;
+            // Client boots into the menu; the SERVER build list (below)
+            // deliberately excludes it.
             var scenes = new System.Collections.Generic.List<string>
-                { "Assets/Scenes/DevArena.unity" };
+                { "Assets/Scenes/MainMenu.unity", "Assets/Scenes/DevArena.unity" };
             scenes.AddRange(System.IO.Directory
                 .GetFiles("Assets/Scenes/Maps", "*.unity")
                 .OrderBy(p => p));

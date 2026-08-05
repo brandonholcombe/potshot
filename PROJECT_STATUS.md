@@ -7,7 +7,7 @@
 | M0 | Scaffold: repo, template, docs, hooks, Unity project, test pipeline | ✅ Complete (2026-08-04) | Screenshot rig + Unity MCP trial moved to M1a |
 | M1a | Unity MCP bridge (trial) | ✅ Complete (2026-08-04) | mcp-unity 1.4.0; editor-daemon.sh; trial verdict due at M1 end. m1b screenshot rig ✅ (probe + play-mode capture) |
 | M1 | Core game offline: tank, 4 weapons, arena, pickups, bots, FFA rounds | ✅ Complete (2026-08-04) | 34-test gate + 4 visual; feel playtest-confirmed; self-damage on ricochets |
-| M2 | FishNet netcode | 🚧 In progress | m2a handshake ✅, m2b predicted movement ✅, m2c networked combat ✅ (LIVE on tow-c1); next: m2d multi-process harness, networked pickups |
+| M2 | FishNet netcode | 🚧 In progress | m2a handshake ✅, m2b movement ✅, m2c combat ✅ (LIVE), ui-menus ✅ (main menu, names, kill feed, pause); next: identity/juice slice, m2d harness, networked pickups |
 | M3 | Dedicated server: Linux build, Docker, first deploy | ✅ Complete (2026-08-04) | LIVE: potshot.kodloki.io:7777/udp on tow-c1; E2E client verified |
 | M4 | Deploy: K8s manifests, hostPort UDP, DNS CronJob, status endpoint, ArgoCD | 📋 Backlog | `potshot.kodloki.io` live |
 | M5 | Friends alpha: dev builds distributed, feedback loop, weapons/maps/modes | 📋 Backlog | |

@@ -1,7 +1,7 @@
 # UI — Main menu, pause menu, named scoreboard
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — menu live (agent-verified render), names on scoreboard, kill feed, pause menu; gate 60/60; deployed d586fb8
 
 Brandon's decisions (2026-08-04, AskUserQuestion): name entry YES;
 scope STANDARD (no server browser yet); mouse/keyboard only.

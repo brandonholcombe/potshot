@@ -5,7 +5,9 @@
         "UnityEngine.TestRunner",
         "Potshot.Core",
         "Potshot.Net",
-        "FishNet.Runtime"
+        "FishNet.Runtime",
+        "Potshot.UI",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -22,12 +22,12 @@ namespace Potshot.Tests
         }
 
         [Test]
-        public void Startup_DefaultsToKodlokiInPlayerBuilds()
+        public void Startup_DefaultsToMenuInPlayerBuilds()
         {
-            var (action, host) = NetBootstrap.ResolveStartup(
+            // The kodloki default lives on the Play Online button now.
+            var (action, _) = NetBootstrap.ResolveStartup(
                 new[] { "/path/to/app" }, isEditor: false);
-            Assert.That(action, Is.EqualTo(NetBootstrap.StartupAction.Client));
-            Assert.That(host, Is.EqualTo("potshot.kodloki.io"));
+            Assert.That(action, Is.EqualTo(NetBootstrap.StartupAction.Menu));
         }
 
         [Test]

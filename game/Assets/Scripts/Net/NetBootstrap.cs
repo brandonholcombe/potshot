@@ -1,21 +1,27 @@
 using System;
 using FishNet.Managing;
+using FishNet.Transporting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Potshot.Net
 {
     /// <summary>
-    /// Connection entry points. CLI: `-potshotServer` starts a server,
-    /// `-potshotClient <host>` connects; neither = offline (M1 behavior
-    /// unchanged). The NetworkHub prefab (NetworkFactory) is instantiated
-    /// on demand and persisted across scene loads.
+    /// Connection entry points. Player builds with no args show the MAIN
+    /// MENU (Play Online carries the kodloki default). Explicit CLI args
+    /// bypass the menu: `-potshotServer`, `-potshotClient <host>`,
+    /// `-potshotOffline`. The NetworkHub prefab is instantiated on demand
+    /// and persists across scene loads.
     /// </summary>
     public static class NetBootstrap
     {
-        /// <summary>Friends build: no args = play on kodloki.</summary>
         public const string DefaultHost = "potshot.kodloki.io";
+        public const string MenuScene = "MainMenu";
+        public const string DefaultGameScene = "DevArena";
 
-        public enum StartupAction { Offline, Server, Client }
+        public enum StartupAction { Menu, Offline, Server, Client }
+
+        static bool _cleanupSubscribed;
 
         public static NetworkManager EnsureHub()
         {
@@ -28,11 +34,19 @@ namespace Potshot.Net
                 UnityEngine.Object.DontDestroyOnLoad(nm.gameObject);
                 // Rigidbody prediction requires TimeManager-driven physics.
                 // Set at RUNTIME only — serializing it on the prefab leaks
-                // global simulation mode into ProjectSettings via editor
-                // OnValidate (M2b). Tests restore globals in teardown.
+                // global simulation mode into ProjectSettings (M2b).
                 nm.TimeManager.SetPhysicsMode(FishNet.Managing.Timing.PhysicsMode.TimeManager);
             }
             return nm;
+        }
+
+        public static bool IsSessionActive
+        {
+            get
+            {
+                var nm = UnityEngine.Object.FindFirstObjectByType<NetworkManager>();
+                return nm != null && (nm.ClientManager.Started || nm.ServerManager.Started);
+            }
         }
 
         public static void StartServer()
@@ -44,14 +58,19 @@ namespace Potshot.Net
         public static void StartClient(string host)
         {
             // Offline actors survive until the connection actually opens —
-            // an unreachable server leaves the offline bot game playable
-            // instead of an empty arena.
+            // an unreachable server degrades to the offline bot game.
+            // Single persistent subscription (a per-call lambda leaked —
+            // UI review).
             var nm = EnsureHub();
-            nm.ClientManager.OnClientConnectionState += args =>
+            if (!_cleanupSubscribed)
             {
-                if (args.ConnectionState == FishNet.Transporting.LocalConnectionState.Started)
-                    CleanOfflineActors();
-            };
+                _cleanupSubscribed = true;
+                nm.ClientManager.OnClientConnectionState += args =>
+                {
+                    if (args.ConnectionState == LocalConnectionState.Started)
+                        CleanOfflineActors();
+                };
+            }
             nm.ClientManager.StartConnection(host);
         }
 
@@ -64,10 +83,18 @@ namespace Potshot.Net
             nm.ClientManager.StartConnection();
         }
 
+        /// <summary>Leave Match: stop everything (host mode stops both
+        /// managers — UI review); caller loads the menu scene.</summary>
+        public static void Disconnect()
+        {
+            var nm = UnityEngine.Object.FindFirstObjectByType<NetworkManager>();
+            if (nm == null) return;
+            nm.ClientManager.StopConnection();
+            nm.ServerManager.StopConnection(true);
+        }
+
         /// <summary>Networked sessions own gameplay: scene-local offline
-        /// tanks (player + bots) and the offline FfaGameMode step aside or
-        /// every client runs phantom local actors beside the networked
-        /// ones (M3). Networked bots/FFA return in m2c.</summary>
+        /// tanks/bots, FfaGameMode, and PickupPads step aside (M3/M2c).</summary>
         static void CleanOfflineActors()
         {
             foreach (var tank in UnityEngine.Object.FindObjectsByType<TankController>(
@@ -79,9 +106,6 @@ namespace Potshot.Net
             foreach (var mode in UnityEngine.Object.FindObjectsByType<FfaGameMode>(
                 FindObjectsSortMode.None))
                 mode.enabled = false;
-            // Pads are server-authoritative in networked play; offline pads
-            // would spawn client-local phantom pickups (M2c review — full
-            // networked pickups are a deferred slice).
             foreach (var pad in UnityEngine.Object.FindObjectsByType<PickupPad>(
                 FindObjectsSortMode.None))
                 pad.enabled = false;
@@ -98,10 +122,10 @@ namespace Potshot.Net
                     return (StartupAction.Client, args[i + 1]);
                 if (args[i] == "-potshotOffline") return (StartupAction.Offline, null);
             }
-            // Player builds default to the kodloki server (Brandon,
-            // 2026-08-04); the editor stays offline for the dev loop.
+            // No args: player builds show the menu; the editor stays in
+            // whatever scene is open (offline dev loop).
             return isEditor ? (StartupAction.Offline, null)
-                            : (StartupAction.Client, DefaultHost);
+                            : (StartupAction.Menu, null);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -111,8 +135,37 @@ namespace Potshot.Net
                 Environment.GetCommandLineArgs(), Application.isEditor);
             switch (action)
             {
-                case StartupAction.Server: StartServer(); break;
-                case StartupAction.Client: StartClient(host); break;
+                case StartupAction.Server:
+                    // Server build's scene 0 IS DevArena (no menu scene) —
+                    // never reload the active scene, that would destroy
+                    // freshly spawned server objects (UI review).
+                    RunInGameScene(StartServer);
+                    break;
+                case StartupAction.Client:
+                    RunInGameScene(() => StartClient(host));
+                    break;
+                case StartupAction.Offline:
+                    RunInGameScene(null);
+                    break;
+            }
+        }
+
+        /// <summary>Ensures a game scene is active (client builds boot into
+        /// the menu scene), then runs the action.</summary>
+        static void RunInGameScene(Action then)
+        {
+            if (SceneManager.GetActiveScene().name != MenuScene)
+            {
+                then?.Invoke();
+                return;
+            }
+            SceneManager.sceneLoaded += OnLoaded;
+            SceneManager.LoadScene(DefaultGameScene);
+
+            void OnLoaded(Scene scene, LoadSceneMode mode)
+            {
+                SceneManager.sceneLoaded -= OnLoaded;
+                then?.Invoke();
             }
         }
     }
