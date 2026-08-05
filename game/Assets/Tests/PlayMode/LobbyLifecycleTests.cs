@@ -134,6 +134,21 @@ namespace Potshot.Tests
             SendCommand(3, null, 0);  // START
 
             yield return WaitFor(() => ActiveScene == "DevArena", 25f, "match scene load");
+
+            // Ghost-game regression (first-life speed bug): the match map's
+            // baked offline actors must be purged after the networked load.
+            yield return null;
+            yield return null;
+            Assert.That(
+                Object.FindObjectsByType<TankController>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                    .Count(t => t.GetComponent<FishNet.Object.NetworkObject>() == null),
+                Is.Zero, "offline ghost tanks survived the match scene load");
+            Assert.That(
+                Object.FindObjectsByType<FfaGameMode>(FindObjectsSortMode.None)
+                    .All(m => !m.enabled), Is.True, "offline FfaGameMode still enabled in match");
+            Assert.That(
+                Object.FindObjectsByType<PickupPad>(FindObjectsSortMode.None)
+                    .All(p => !p.enabled), Is.True, "offline PickupPads still enabled in match");
             NetFfaState match = null;
             yield return WaitFor(() =>
                 (match = Object.FindFirstObjectByType<NetFfaState>()) != null, 10f, "match state");

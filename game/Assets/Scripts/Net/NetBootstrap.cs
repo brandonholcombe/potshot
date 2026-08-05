@@ -120,8 +120,12 @@ namespace Potshot.Net
         }
 
         /// <summary>Networked sessions own gameplay: scene-local offline
-        /// tanks/bots, FfaGameMode, and PickupPads step aside (M3/M2c).</summary>
-        static void CleanOfflineActors()
+        /// tanks/bots, FfaGameMode, and PickupPads step aside (M3/M2c).
+        /// Public: PlayerSpawner re-runs this after EVERY networked scene
+        /// load — match maps ship baked offline actors, and cleaning only
+        /// at connection start let a ghost offline game run inside matches
+        /// (the 'first-life speed' bug).</summary>
+        public static void CleanOfflineActors()
         {
             foreach (var tank in UnityEngine.Object.FindObjectsByType<TankController>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None))

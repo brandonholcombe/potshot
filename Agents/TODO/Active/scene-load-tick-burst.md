@@ -1,7 +1,7 @@
 # Net — First-life speed burst after scene loads
 
 ## Author: fable-primary
-## Status: Not Started
+## Status: Complete (2026-08-04) — wrong-diagnosis review caught ghost offline game; fix on hub OnLoadEnd; gate 69/69; deployed 87215dc both sides
 
 Brandon (2026-08-04): "tank speed is out of control on the first life or
 something." Hypothesis: scene-load tick-debt catch-up — the client now

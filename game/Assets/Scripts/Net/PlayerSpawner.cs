@@ -28,6 +28,7 @@ namespace Potshot.Net
             _nm = GetComponent<NetworkManager>();
             _nm.SceneManager.OnClientLoadedStartScenes += OnClientLoadedStartScenes;
             _nm.ServerManager.OnServerConnectionState += OnServerState;
+            _nm.SceneManager.OnLoadEnd += OnAnySceneLoadEnd;
         }
 
         void OnDestroy()
@@ -35,6 +36,16 @@ namespace Potshot.Net
             if (_nm == null) return;
             _nm.SceneManager.OnClientLoadedStartScenes -= OnClientLoadedStartScenes;
             _nm.ServerManager.OnServerConnectionState -= OnServerState;
+            _nm.SceneManager.OnLoadEnd -= OnAnySceneLoadEnd;
+        }
+
+        /// <summary>Ghost-game fix: purge baked offline actors after every
+        /// networked scene load (lives on the hub so every instantiation
+        /// path — bootstrap, tests — is covered).</summary>
+        void OnAnySceneLoadEnd(FishNet.Managing.Scened.SceneLoadEndEventArgs args)
+        {
+            if (_nm.ServerManager.Started || _nm.ClientManager.Started)
+                NetBootstrap.CleanOfflineActors();
         }
 
         void OnServerState(FishNet.Transporting.ServerConnectionStateArgs args)
